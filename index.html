@@ -1,19 +1,83 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>DEEZsite</title>
-    <style>
-      body {
-        background-color: black;
-        color: lime;
-        font-family: monospace;
-        text-align: center;
-        padding-top: 100px;
+<head>
+  <title>NETRUNNER - ACCESS CONSOLE</title>
+  <style>
+    body {
+      background-color: black;
+      color: #00ffcc;
+      font-family: 'Courier New', Courier, monospace;
+      padding: 40px;
+      text-shadow: 0 0 5px #00ffcc;
+    }
+    h1 {
+      text-align: center;
+      font-size: 3em;
+      color: #ff00ff;
+      text-shadow: 0 0 10px #ff00ff;
+    }
+    .terminal {
+      background: #000000;
+      padding: 20px;
+      border: 1px solid #00ffcc;
+      box-shadow: 0 0 15px #00ffcc;
+      max-width: 700px;
+      margin: 0 auto;
+      font-size: 1.2em;
+    }
+    .glitch {
+      animation: flicker 0.15s infinite alternate;
+    }
+    @keyframes flicker {
+      from { opacity: 1; }
+      to { opacity: 0.4; }
+    }
+    .input-section input {
+      background: black;
+      color: #00ffcc;
+      border: none;
+      border-bottom: 1px solid #00ffcc;
+      font-family: monospace;
+      font-size: 1em;
+      padding: 5px;
+      width: 100%;
+    }
+    .input-section button {
+      background: #00ffcc;
+      border: none;
+      color: black;
+      padding: 8px 16px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>NETRUNNER ACCESS CONSOLE</h1>
+  <div class="terminal">
+    <p>> SYSTEM ONLINE...</p>
+    <p>> CONNECTING TO MAINFRAME...</p>
+    <p>> CONNECTION ESTABLISHED.</p>
+    <p>> ENTER OVERRIDE CODE TO CONTINUE:</p>
+    <div class="input-section">
+      <input type="text" id="password" placeholder="Enter override code">
+      <button onclick="verifyPassword()">ENGAGE</button>
+    </div>
+    <p id="output" class="glitch"></p>
+  </div>
+
+  <script>
+    function verifyPassword() {
+      const code = document.getElementById("password").value;
+      const output = document.getElementById("output");
+      if (code.toLowerCase() === "delta-47") {
+        output.innerHTML = "> ACCESS GRANTED. Welcome, operative.";
+        output.style.color = "#00ff00";
+      } else {
+        output.innerHTML = "> ACCESS DENIED. TRACE INITIATED.";
+        output.style.color = "#ff0000";
       }
-    </style>
-  </head>
-  <body>
-    <h1>DEEZ NUTS 💀</h1>
-    <p>Welcome to my glorious site.</p>
-  </body>
+    }
+  </script>
+</body>
 </html>
