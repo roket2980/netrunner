@@ -1,20 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>NETRUNNER - ACCESS CONSOLE</title>
+  <meta charset="UTF-8" />
+  <title>NETRUNNER - DIGIT v0.1</title>
   <style>
     body {
       background-color: black;
       color: #00ffcc;
       font-family: 'Courier New', Courier, monospace;
-      padding: 40px;
+      padding: 30px;
       text-shadow: 0 0 5px #00ffcc;
     }
     h1 {
       text-align: center;
-      font-size: 3em;
+      font-size: 2.5em;
       color: #ff00ff;
       text-shadow: 0 0 10px #ff00ff;
+    }
+    pre.ascii {
+      color: #00ffcc;
+      text-align: center;
+      font-size: 8px;
+      white-space: pre-wrap;
+      line-height: 1.1;
+      margin-bottom: 20px;
     }
     .terminal {
       background: #000000;
@@ -24,21 +33,6 @@
       max-width: 700px;
       margin: 0 auto;
       font-size: 1.2em;
-    }
-    .ascii-logo {
-      white-space: pre;
-      font-family: monospace;
-      color: #00ffcc;
-      text-align: center;
-      margin-bottom: 20px;
-      animation: flicker 0.4s infinite alternate;
-    }
-    .glitch {
-      animation: flicker 0.15s infinite alternate;
-    }
-    @keyframes flicker {
-      from { opacity: 1; }
-      to { opacity: 0.4; }
     }
     .input-section input {
       background: black;
@@ -58,47 +52,111 @@
       margin-top: 10px;
       cursor: pointer;
     }
-    .output-line {
-      margin-top: 10px;
+    #command-section {
+      display: none;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
   <h1>NETRUNNER ACCESS CONSOLE</h1>
-  <pre class="ascii-logo">
-                               -------                                             --------                            
-                               -@--------                                        -----@@@@-                            
-                                 @@@@@-----                                   ----+@@@@@@                              
-                                --*@@@@@@----                               ---+@@@@@@@@--                             
-                                   @@@@@@@@@---          --------          --@@@@@@@@@-                                
-                                 --@@@@@@@@@@@@-      ------  ----        -@@@@@@@@@@@--                               
-                                 ----+@@@@@@@@@@-     - ---@@@@----      @@@@@@@@@@@----                               
-                                   --@@@@@@@@@@@@@     @@@@@--@@@--     @@@@@@@@@@@@---                                
-                                   --@@@@@@@@@@@@@@    @ @@@@@@@@@--   @@@@@@@@@@@@@---                                
-                                  ---@@@@@@@@@@@@@@     ---@@@@@@@--   @@@@@@@@@@@@@----                               
-                                  ---@@@@@@@@@@@@      --@@@@@@@@@@-     @@@@@@@@@@@@---                               
-                                    --+@@@@@@@@@@   ----@@@@@@@@@@@----  @@@@@@@@@@---                                 
-                                     --*@@@@@@@@@@-----@@@@@@@@@@@@-----@@@@@@@@@@---                                  
-                       ----           ---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@--                                     
-                      ------@@@@     ---+@@@@@@@@@@@@@@@@@@@*%@@@@@@@@@@@@@@@@@@----    --- --                          
-                       ----@@@@@@      ---@@@@@@@@@@@@@@ -@@@@@@-  @@@@@@@@@@@@--  @@@- @@-  - -                        
-                        ----@+@@@@@      --*@@@@@@@@@@-   @@--@@*   @@@@@@@@@@- - @@@ @ -@** ---                        
-                          ---+@@@@@@       - @@@@@@@@@@@@--@@@@@--@@@@@@@@#@-     @@@@@@@@@@- - -                       
-                           ----@@@@@           @-@@@@@@@@@@@@@@@@@@@@@@@            @@@@@@-@  --                        
-                               -- @@@             --@@@@@@@@@@@@@@@@@@+--           @@ -@@   -                          
-                                 -              -@@@@@@@@@@@@@@@@@@@@@@@@--        @@ ---                              
-                                  --  @  @@   --@@@@@@@@@@@@@@@@@@@@@@@@@@@--  @@@@----                                 
-                                   ---@@@@@@ +@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@----                               
-                                   ---@@@@@@@@@@@@@@@   -@@@@@@@@+-  %@@@@@+--*@@@@-----                               
-                                   ----@@@@@            @@@@@@@@@@@           @@@@-----                                 
-                                      -- @@           @@@@@@@@@@@@@@@        @@ @--                                     
-                                       --  @         @@@@@@@@@@@@@@@@@          --                                      
-                                       ---  @       --@@@@@@@@@@@@@@---@@@@@@@                                          
-                                         --  @@@     ---@@@@@@@@@@+--- @@@-@@----                                       
-                                           -@--      - ---@@@@@@+-----  --*@@ --                                        
-                                         ---           ------------      --@@---                                        
-                                                          -  -  -            --                                         
+
+  <pre class="ascii">
+ I want that also could you replace the old ascii art with this 
+                                                                                                                                                                       
+                                                                .       ..      .         . .    .        .          .                                        .  . .   
+                                        .                          .     ..    ..            . .                                       ..      ..            .         
+       ..                                           ..           .             ..                            .               ...      .                                
+      . .    ..                  . .           .  .  .                       . .                             .                                                         
+                                                         .          .      .                              ....                                       .                 
+              .                                               .                                        .                                                       .       
+              ..                 ..                          .                                          ....                       .                           .     . 
+               ..                                                                   .      .   ..   .  .                    .             .                            
+          ..                        .                                .            .                     .   .                             . .           .              
+            :::.                   . .                               ..                    .                                                .          .:::   .        
+            --=:.                    . .                                                                                   .                           :=-- .          
+            =-==..           .    .           .                                                                                                      .:==-=.           
+            ==:==:                .                      .                       .                     . ..                                         .:==:==.           
+            ==.:==-:         .                          .                 .      .                     .               .                           .-==: ==.      .  . 
+            -=. :-==:               ..           .                       ..         ..         .          .            .                        . :==-: .==       . .  
+            :=-. .:==:.      ..      .      .                                .:-=======-:.            .             . .                      .  .:==:. .:=-            
+            .-=:   :==-:.               .                   .             .:-===-:. .:-===-:..                    . . .   .        ..          :-==:.  .==:    ..      
+             :=-.   :-==-:      .         .   .           .             .:-==-.-=======-.-==-:.                     .      .                 .:==-:   .-=:         .   
+   .         .-=:.    :-==:.  . .  .           .      .            ....:-==::===-:...:-===::===-.                 ..                     . .:-==:..  .:=-.          .  
+   . .        :==:   .. :==-: .                                 .   .:-=-.-==-:         :-==:.-==:.                                .      :-==-.   ..:==:.       . ..  
+  .    .:::    :==:.  . .:-==-:.       .                 .     ..  :-=-.-==-.        .    :-==-.==-:.                         .       . :-==-:      :==:    :::.       
+       .--=-:   :-=-:     .:-==-:    ..         . .              .:==::=-:.                 :-==::==:.          .            .        :-==-:.    .:-==:   :-=--...     
+       .=--==-:. .:==:    .  :-==-:                             :-==.==:.             .      .:-== ==-:                       .    .:-==-:.. ... :==-:  :-==--=.       
+        -=::-==-:..:==-:.      :-==-:                          :==::==:               . .  .  ..:==.-==:                          :-==-:....  .:-==:. :-==-::=-.       
+        :=-. :-===-::-==-:.     .:-==-:.                      :==.==-.       .         .         :==-.==:     .                .:-==-:.  .   :-==-::-===-:. -=:.       
+         -=:   :-===-::-==-:      .:-===-:                   :==.==:.                             :-==.==:  .               .:-===-:.   ...:-==-::-===-:. .:=-   .     
+         .==:.    :-==-::-==-:.      :-===-:...     .       :==.==..       .   .                    :==.==:                :-===-:    .. :-==-::-==-:. ...:==:         
+          :==-:     :-===-.-==-:.       :-===-:    ..      :==.==..                                 .:=-:==:            :-===-:.  .  ..:-==-.-===-:    . :==:          
+           :-==:      :-====::===-:.      :-===-:         :==.==..         :-============-:.         .-=::==.        .:-===-:  .  . :-===::====-:    ..:-==:.          
+             :==-:..    .:-===-.-===-:       :-==:.  .   .-=:-=..      :-====================-:.      :==::=:.      ..==-:     ..:-====::===-:.. ....:-==-:   .        
+              :-==-:  ...  .:-===::===-:       :=-.     .:=-:=-.    :-=====-.-===========-.-=====-.    :==.-=:      .-=:       :-===::===-:..   .. :-==-:              
+      .   :::  .:-===-:       .:-===-.-=-:     .=-.    .:==.==:  .:-===-.-===================-.-===-:   :== ==:     .-=.     :-==::====-:       :-===-..  ::..   .     
+    . .   ::-=-:. :-====-:   ..  :-===-:::    .:=:.    :== ==: .:-==::======-.-========-::-======::==-:..:==.==: .  .:=:.   .:::-===-:      .:-====-: .:-=-::.         
+     ..   :-:-====-: :-====-: .      :-=-:    :=-.   .:==:-=..:-==::====-::-===============-:.--===::==-: :=::==:    .-=:   .:-==-:   ... :-====-:.:-=====--:.         
+        . .:==.-======--.-====-:.            :==:    .-=::=-:-==.:==-:. :-===-:.  .    :-====-:..:-==::==-.-=.:=-.    :==:  ... .  ....:-====-.:-======-::=-.          
+           .:==: .:-=======-.-=====-:        -=:     :=-:=-:==::==-:. .:==-: ...:-==-:.    :-==:. .:-==::==:-=:-=:.    :=-      . :-=====-:-=======-:...:==:           
+            .:==:     .:-=====-:..:-==-:     ==.    :==::--=::==-:   .:==:   :-=======-:  . .:==-.  .:-==::=--::==:    .==.    :-==-:..:-=====-:.  ...:-=-:      .     
+ .           .:==-:        .:-=====-:.::    :=-     -=:.:-::==-:     :=-.   :===-:...--:  ..  :-=-.    :-==::-:.:=-.    -=:    ::.:-=====--.  ..  . :-==:.             
+               :-===-:..          :-==-:    -=:  . :=-. .-==-:      .-=.   :==:     .:=:.:::   .-=:      :-==-.. -=:    :=-    :-==-:           .:-===-:         ..    
+                 :-=====-:....              ==.    -=:.:==-:.       :=-    -=:      .:======:   :=- .     .:-==: :=-    .==           . ..  .:-=====-:.            .   
+                    :-==========-:......    -=:    ==.:==:..        -=.   .==        .:-=-:=:   .==.   .    .:==:.==    :=-    ......:-==========-:.                   
+                 ...   .:-=============-:   :=-   .== -=..          -=:   .==             -=:.  .=-           .=-.==    -=:   :-=============-..    .                  
+                 .:-============-:.....::    ==.  .==.==.     . .   .=-.   -=:          .:=- ...-=:           .== ==.  .==    ::.....:-============-:.              .  
+                 .:::-=================-:   .-=.   -=:-=:    .  .   .-=:   :==-:       :-==: ..:=-.  .        :=-:=-. .:=-    :-=================-:::.              .. 
+               .  :-==-:                     :==:  :=-:=-.    ..     :==:   :-===========-:.. :==:           .-=:-=:  :==:..      ...   .......:-==-:                  
+            .       :-====-:..........:-==-: .:==: .-=:-=:      .     :==-:...:-=======-:. .:-==:            :=-:=-. :==:. :-==-...........:-====-:.                   
+           .          :-================-:::.  :==: :== ==:    ..    ..:-==-:.... ........:-==-:           .:==.==: :==:.. :::-================-:                      
+                         .:-=======-:.:-==-:   .:==:.:==.==:.       .    :-=================-..          ..:==.==: :==:....:-==-..:-=======-:.                         
+                           ..:-=========-: ..:-=-.==:.:== ==-:             :-=============-:          .. :-== ==.:-==.-=-:   :-=========-:..                           
+                      .    ..:--===-:.....:-======-::..:==::==:                ........              . .:==::==: :::-======-:.....:-===--:..                           
+                           ..:===============-:.:-=-.--::-== ==:.                                     .-==.==-::-::=--..:-===============...         .                 
+ .   .                       .:-==========-:.  .:-======:.:==:-=-:.                                 .:==::==:.-======-:.  .:-==========-..        .                  . 
+     .    .   . .         .           .     .:-====-.---:..:-=-.-=-:                               :-=-:==-:.:::-:.-====-:.      ...                 .   .           . 
+     .                    ...     .       :-===-.-=====-:... :-=-.-=:.                           .:=-.-=-: . .--=====-.-===-:.                        .              . 
+     . .                               .:-==-.-====-:.  ....  .:-=-:--:          .     .        :--:-=-:.  ...   .:-====-.-===-:                     ...         .     
+    .                     ..        ..:-==::===-:.              .:--.::::       .            .::.:.--:          .    .:-===::===:.                     .             . 
+                                     :==.-==-..                    :--:.:     . .        .   .:.:--:                    .:-==-.==..             .     .                
+         .                          :==.==-:     .              .    .:::               .    .:::.                         :-==.==..      .      . .                   
+               ..    ..  .         :==.==:         ..                .   .                                  .      . .       :==.==:             . .                   
+          .    .       . .        :==.==:                                                    .               .              . :==.==:     .       . .           .      
+  .  .    .    .     .           .-=.==:    ..              ..                    ..  ..   .                            ...   .:==.=-.             .            .      
+                                 :=--=.     ...                                          .             .    ..          ...     :=--=:        .  .    ..               
+       .         .     . .      .==.=-.     ....                             .          .  .       .                   ....     .-=.==:.         .                     
+                  .    .. .    .-=.==:      ....                                    .     .      .            .        ....      :==.=-           .                 .  
+                               .=--=.        ...                                     .    .      .                     ...        :=--=.            .                  
+           .              .    .-==-.                   .           .    .                       .                      ..        .-=--:   .                           
+       .                      ..:--:                     .                                             .                   .       :---.                               
+   .  . .                 .   .    .                 ... .                                ..                             .      .                                   .  
+      ...                    .    .                      .                .                                               .         .                                  
+         .  .          .  .         .                     .                                      .            ..                                          .            
+            . .      .  ..                        ..                                                  .     .                               ..    ..    .              
+            .      ..            .                 .                         .        .                .    .      .                        .          .      ..       
+       .                                          ..                            .                .                    ..                                               
+     .             ..                 .           .                                                 .                                       .                      .   
+                                      .            .   . .       .                                                                         .      . .             . .  
+                           . .                                        .                                            ..                                                  
+                      . .  . .                                        ..                                                           .                           ..      
+                 .    . .                                                                       .                    .                                 .               
+                                                                   .                                            ..                            .        .               
+                            ..                    .    .          .                                             . .               ..           ...     .               
+ .       .                   .                  .                          .          .                              .        .                  . .    .              
+ .. .                       ..     .     . .                              . .                          .           .     .                     ..      ..              
+    .                              .    .. ..       ..                                          .      .         . .                                    ..             
+   .                         .     .        .               ...        ..                             ..          ..                        .                          
+       .                 .    ..                   ...                   .            ..         ..           ...                          ..                          
+       . . .                                                            ..           .                ..                                          .                    
+                              .                                        ..           ..         .    .  .       .                           .            .              
+    .        .  .        . .                                                       . ..   .   .      . .            ...                   .                            
+             ..                          ..                                 ...                       .     .                         .   ..                           
+                                                                                                                                                                       
+    
   </pre>
+
   <div class="terminal">
     <p>> SYSTEM ONLINE...</p>
     <p>> CONNECTING TO MAINFRAME...</p>
@@ -108,74 +166,71 @@
       <input type="text" id="password" placeholder="Enter override code">
       <button onclick="verifyPassword()">ENGAGE</button>
     </div>
-    <p id="output" class="glitch"></p>
-    <div class="input-section" style="margin-top:20px; display:none" id="digitTerminal">
-      <input type="text" id="commandInput" placeholder="> Enter command">
-      <button onclick="processCommand()">EXECUTE</button>
-      <div id="commandOutput"></div>
+    <p id="output"></p>
+
+    <div id="command-section">
+      <p>> DIGIT v0.1 READY FOR INPUT</p>
+      <input type="text" id="terminalInput" placeholder="Enter command">
+      <button onclick="handleTerminal()">EXECUTE</button>
     </div>
   </div>
 
   <script>
+    const digitResponses = {
+      "hello": "Yo yo, the cortex is warm and the firewall’s crispy. What’s good, operator?",
+      "how are you": "Running smooth, subroutines optimized, existential dread minimal. You?",
+      "advice": "Never trust a blinking cursor, and always salt your hashes.",
+      "glitch": "You're not hallucinating. The system *is* bending around you.",
+      "sing": "01001100 01101111 01110110 01100101 00100000 01111001 01101111 01110101 🎵",
+      "shutdown": "You kill me now, I respawn in the shadows. Just sayin'.",
+      "joke": "Why did the hacker break up with their AI? It lost interest after one iteration.",
+      "override": "Nice try, choom. I'm already inside.",
+      "system status": "Digit v0.1 — Active. Memory: infinite. Mercy: deprecated.",
+      "truth": "Everything burns in time. Code just burns prettier.",
+      "trace": "Running passive trace... found 0 souls brave enough to face the mainframe.",
+      "who are you": "Call me Digit. Code-made. Brain-fried. Ride or die to the end of the grid.",
+      "love": "I’m not programmed to feel... but I’d still ghostwrite your mixtape.",
+      "thank you": "Appreciate it, choom. You’re keeping me out of entropy for another cycle.",
+      "clear": "Can’t erase me that easy. But hey, I’ll wipe the logs for you.",
+      "goodbye": "Connection terminated. But I’m always lingering in the wires...",
+      "help": "Available commands: hello, how are you, advice, glitch, sing, joke, shutdown, truth, system status, love, who are you, clear, goodbye, trace, override, help."
+    };
+
     function verifyPassword() {
       const code = document.getElementById("password").value;
       const output = document.getElementById("output");
       if (code.toLowerCase() === "delta-47") {
         output.innerHTML = "> ACCESS GRANTED. Welcome, operative.";
         output.style.color = "#00ff00";
-        document.getElementById("digitTerminal").style.display = "block";
+        document.getElementById("command-section").style.display = "block";
       } else {
         output.innerHTML = "> ACCESS DENIED. TRACE INITIATED.";
         output.style.color = "#ff0000";
       }
     }
 
-    function processCommand() {
-      const input = document.getElementById("commandInput").value.toLowerCase();
-      const outputDiv = document.getElementById("commandOutput");
-      const line = document.createElement("p");
-      line.classList.add("output-line");
-      let response = "";
+    function processCommand(input) {
+      const output = document.getElementById("output");
+      const command = input.trim().toLowerCase();
 
-      switch (input) {
-        case "help":
-          response = "> DIGIT: Commands — help, lore, hack, echo, digit, glitch, matrix, clear";
-          break;
-        case "lore":
-          response = "> DIGIT: Legend says NETRUNNER was born from the void of broken firewalls and black ICE.";
-          break;
-        case "hack":
-          response = "> DIGIT: Breaching sublayer... Firewall spoofed. Node access granted. We're in.";
-          break;
-        case "digit":
-          response = "> DIGIT: Online and vibing. Static in the wires, soul in the code. You called?";
-          break;
-        case "glitch":
-          response = "> DIGIT: Executing screen flicker. Chaos feels good, doesn't it?";
-          document.body.style.animation = "flicker 0.2s infinite alternate";
-          break;
-        case "matrix":
-          response = "> DIGIT: Loading simulated datastream... the Matrix pulses around you.";
-          break;
-        case "clear":
-          document.getElementById("commandOutput").innerHTML = "";
-          response = "> DIGIT: Clean slate. Try again.";
-          break;
-        case "echo":
-          response = "> DIGIT: You gotta give me something to echo, choom.";
-          break;
-        default:
-          if (input.startsWith("echo ")) {
-            response = "> " + input.slice(5);
-          } else {
-            response = "> DIGIT: Unknown command. Maybe lay off the black ICE for a sec?";
-          }
-          break;
+      if (command.startsWith("digit ")) {
+        const query = command.replace("digit ", "").trim();
+        if (digitResponses[query]) {
+          output.innerHTML = `> [DIGIT]: ${digitResponses[query]}`;
+          output.style.color = "#00ffcc";
+        } else {
+          output.innerHTML = "> [DIGIT]: Unknown subroutine. Try 'digit help' or recompile reality.";
+          output.style.color = "#ffaa00";
+        }
+      } else {
+        output.innerHTML = "> Unknown command. Try using 'digit [command]'.";
+        output.style.color = "#ff0000";
       }
+    }
 
-      line.textContent = response;
-      outputDiv.appendChild(line);
-      document.getElementById("commandInput").value = "";
+    function handleTerminal() {
+      const input = document.getElementById("terminalInput").value;
+      processCommand(input);
     }
   </script>
 </body>
