@@ -1,194 +1,289 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>ANON-BOARD</title>
   <meta charset="UTF-8">
+  <title>Hax0r Terminal Forum</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
     body {
-      background-color: black;
-      color: #00ff00;
-      font-family: 'Courier New', Courier, monospace;
+      background: #111;
+      color: #33ff33;
+      font-family: monospace;
       margin: 0;
-      padding: 0;
-      overflow-x: hidden;
+      min-height: 100vh;
     }
-
-    .terminal {
-      padding: 20px;
-      max-width: 900px;
-      margin: auto;
-      white-space: pre-wrap;
+    .terminal-box {
+      background: #111;
+      color: #33ff33;
+      border: 2px solid #33ff33;
+      border-radius: 6px;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 28px;
+      box-shadow: 0 0 24px #000a;
     }
-
-    .green {
-      color: #00ff00;
+    h2, h3 {
+      margin-top: 0;
+      color: #39ff14;
+      text-shadow: 0 0 6px #094;
     }
-
-    .header {
-      text-align: center;
-      padding: 10px;
-      font-size: 1.5em;
-      text-shadow: 0 0 5px #00ff00;
+    ul {
+      padding-left: 1.3em;
     }
-
-    .blink {
-      animation: blink 1s step-start infinite;
+    li {
+      margin-bottom: 6px;
     }
-
-    @keyframes blink {
-      50% { opacity: 0; }
-    }
-
-    .post-box, .thread-box {
-      border: 1px solid #00ff00;
-      padding: 10px;
-      margin-bottom: 20px;
-      background: rgba(0, 0, 0, 0.8);
-    }
-
-    textarea, input[type="text"], button {
-      background: black;
-      color: #00ff00;
-      border: 1px solid #00ff00;
-      padding: 5px;
+    input, textarea, button {
+      background: #111;
+      color: #33ff33;
+      border: 1px solid #33ff33;
       font-family: monospace;
       font-size: 1em;
-      width: 100%;
-      margin-top: 5px;
+      border-radius: 2px;
+      outline: none;
     }
-
+    input, textarea {
+      padding: 3px 6px;
+    }
+    textarea {
+      min-height: 42px;
+      width: 90%;
+      margin-top: 4px;
+      resize: vertical;
+    }
     button {
+      padding: 4px 10px;
+      margin-left: 10px;
       cursor: pointer;
+      transition: background 0.15s;
     }
-
-    .thread {
-      margin-top: 10px;
-      padding: 10px;
-      border: 1px dashed #00ff00;
+    button:hover {
+      background: #333;
     }
-
-    .timestamp {
-      font-size: 0.8em;
-      color: #00aa00;
-    }
-
-    a {
-      color: #00ff00;
+    .thread-link {
+      cursor: pointer;
       text-decoration: underline;
-      cursor: pointer;
+      color: #6f6;
     }
-
-    .matrix-fade {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100vh;
-      background: black;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5em;
-      animation: fadeOut 4s forwards;
+    .thread-link:hover {
+      color: #fff;
+      background: #222;
     }
-
-    @keyframes fadeOut {
-      0% { opacity: 1; }
-      95% { opacity: 0.2; }
-      100% { opacity: 0; display: none; }
+    .post-author {
+      color: #c3ffb6;
+      font-weight: bold;
+      margin-right: 6px;
+    }
+    .post-date {
+      color: #098;
+      font-size: 10px;
+      margin-left: 10px;
+    }
+    .back-btn {
+      margin-bottom: 14px;
+      margin-top: 0;
+      display: inline-block;
+    }
+    .label {
+      color: #0ff;
+      margin-bottom: 4px;
+      font-size: 0.95em;
+      display: block;
+    }
+    @media (max-width: 730px) {
+      .terminal-box { max-width: 98vw; padding: 3vw;}
     }
   </style>
 </head>
 <body>
-  <div class="matrix-fade">
-    <span class="green blink">Initializing forum shell...</span>
+  <div class="terminal-box" id="app">
+    <!-- Rendered by JS -->
+    <noscript>
+      <b>Enable JavaScript for the forum to work!</b>
+    </noscript>
   </div>
-
-  <div class="terminal">
-    <div class="header">ANON-BOARD // [ENTER] YOUR WHISPERS INTO THE VOID</div>
-
-    <div class="post-box">
-      <h3 class="green">[+] Post Something</h3>
-      <input type="text" id="postTitle" placeholder="Thread title...">
-      <textarea id="postBody" placeholder="Say something anonymous..." rows="5"></textarea>
-      <button onclick="createPost()">Submit</button>
-    </div>
-
-    <div class="thread-box">
-      <h3 class="green">[∞] Threads</h3>
-      <div id="threads"></div>
-    </div>
-  </div>
-
   <script>
-    let posts = JSON.parse(localStorage.getItem("anonThreads") || "[]");
+    // --- FORUM LOGIC BELOW ---
 
-    function savePosts() {
-      localStorage.setItem("anonThreads", JSON.stringify(posts));
+    // == CONFIGURATION ==
+    // You can make your own bin at https://jsonbin.io and set as below for privacy.
+    const JSONBIN_BIN = "665b67c6e41b4d34e4fa275b"; // demo bin, public, don't use for secrets!
+    const JSONBIN_SECRET = ""; // For public bins, keep blank. For private bins, put your API key here.
+
+    // == API WRAPPER ==
+    const api = {
+      async get() {
+        const r = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN}/latest`, {
+          headers: JSONBIN_SECRET ? { 'X-ACCESS-KEY': JSONBIN_SECRET } : {}
+        });
+        const json = await r.json();
+        return json.record || {threads:[],posts:[]};
+      },
+      async put(data) {
+        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN}`, {
+          method: "PUT",
+          headers: {
+            'Content-Type': 'application/json',
+            ...(JSONBIN_SECRET ? { 'X-ACCESS-KEY': JSONBIN_SECRET } : {})
+          },
+          body: JSON.stringify(data)
+        });
+      }
+    };
+
+    // == MAIN UI LOGIC ==
+    let state = {
+      threads: [],
+      posts: [],
+      selected: null,
+      author: localStorage.haxorAuthor || "anon",
+      loading: true
+    };
+
+    // Helper: Format date
+    function fmtDate(dt) {
+      return new Date(dt).toLocaleString();
     }
 
-    function createPost() {
-      const title = document.getElementById("postTitle").value.trim();
-      const body = document.getElementById("postBody").value.trim();
-      if (!title || !body) return alert("You must enter both a title and content.");
-
-      posts.unshift({
-        id: Date.now(),
-        title: title,
-        body: body,
-        replies: [],
-        timestamp: new Date().toLocaleString()
-      });
-
-      document.getElementById("postTitle").value = "";
-      document.getElementById("postBody").value = "";
-      savePosts();
-      renderThreads();
+    // Helper: escape HTML
+    function esc(s) {
+      return (""+s).replace(/[&<>"]/g, c => (
+        { "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]
+      ));
     }
 
-    function replyToPost(id) {
-      const input = document.getElementById("reply_" + id).value.trim();
-      if (!input) return;
-      const post = posts.find(p => p.id === id);
-      post.replies.push({
-        text: input,
-        timestamp: new Date().toLocaleString()
-      });
-      savePosts();
-      renderThreads();
+    // Set state and re-render
+    function setState(patch) {
+      Object.assign(state, patch);
+      render();
     }
 
-    function renderThreads() {
-      const threadBox = document.getElementById("threads");
-      threadBox.innerHTML = "";
+    async function load() {
+      setState({loading:true});
+      try {
+        const data = await api.get();
+        setState({...data, loading:false});
+      } catch (e) {
+        setState({loading:false});
+        alert("Failed to load forum data.");
+      }
+    }
 
-      if (posts.length === 0) {
-        threadBox.innerHTML = "<p>No threads posted yet. Be the first.</p>";
+    async function addThread(title, author) {
+      if (!title.trim()) return;
+      const id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+      const newThread = { id, title, author, created: new Date().toISOString() };
+      const threads = state.threads.concat([newThread]);
+      await api.put({ threads, posts: state.posts });
+      setState({ threads });
+    }
+
+    async function addPost(threadId, content, author) {
+      if (!content.trim()) return;
+      const newPost = {
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
+        threadId,
+        content, author,
+        created: new Date().toISOString()
+      };
+      const posts = state.posts.concat([newPost]);
+      await api.put({ threads: state.threads, posts });
+      setState({ posts });
+    }
+
+    // == RENDERING ==
+    function render() {
+      const app = document.getElementById("app");
+      if (state.loading) {
+        app.innerHTML = "<h2>_Hax0r Forum v1.0_</h2><p>Loading...</p>";
         return;
       }
-
-      posts.forEach(post => {
-        const thread = document.createElement("div");
-        thread.className = "thread";
-        thread.innerHTML = `
-          <div><strong>[Thread]</strong> ${post.title}</div>
-          <div class="timestamp">${post.timestamp}</div>
-          <pre>${post.body}</pre>
-          <div><strong>Replies:</strong></div>
+      if (state.selected) {
+        // Show thread view
+        const thread = state.threads.find(t => t.id === state.selected);
+        if (!thread) { setState({selected:null}); return; }
+        const threadPosts = state.posts.filter(p => p.threadId === thread.id);
+        app.innerHTML = `
+          <button class="back-btn" onclick="window.forumBack()">&lt; Back</button>
+          <h3>[${esc(thread.author)}] ${esc(thread.title)}</h3>
           <ul>
-            ${post.replies.map(r => `<li>${r.text} <span class="timestamp">[${r.timestamp}]</span></li>`).join("")}
+            ${threadPosts.map(p => `
+              <li>
+                <span class="post-author">[${esc(p.author)}]</span>
+                ${esc(p.content)}
+                <span class="post-date">${fmtDate(p.created)}</span>
+              </li>
+            `).join("")}
           </ul>
-          <textarea id="reply_${post.id}" rows="2" placeholder="Reply..."></textarea>
-          <button onclick="replyToPost(${post.id})">Send</button>
+          <form onsubmit="window.forumReply();return false;">
+            <span class="label">Reply as:</span>
+            <input id="reply-author" value="${esc(state.author)}" style="width:80px"
+              oninput="window.forumSetAuthor(this.value)">
+            <textarea id="reply-content" placeholder="Type your reply..."></textarea>
+            <button type="submit">+ Reply</button>
+          </form>
         `;
-        threadBox.appendChild(thread);
-      });
+        // Autofocus textarea
+        setTimeout(() => { document.getElementById("reply-content")?.focus(); }, 1);
+      } else {
+        // Show thread list
+        app.innerHTML = `
+          <h2>_Hax0r Forum v1.0_</h2>
+          <span class="label">User:</span>
+          <input id="user-author" value="${esc(state.author)}" style="width:100px"
+            oninput="window.forumSetAuthor(this.value)">
+          <h3>Threads</h3>
+          <ul>
+            ${state.threads.map(t => `
+              <li>
+                <span class="thread-link" onclick="window.forumOpen('${t.id}')">
+                  [${esc(t.author)}] ${esc(t.title)}
+                </span>
+                <span class="post-date">${fmtDate(t.created)}</span>
+              </li>
+            `).join("") || "<li>No threads yet.</li>"}
+          </ul>
+          <form onsubmit="window.forumNewThread();return false;">
+            <input id="thread-title" placeholder="New thread title" style="width:70%">
+            <button type="submit">+ New Thread</button>
+          </form>
+          <div style="margin-top:36px;font-size:12px;color:#888;">
+            <b>Demo:</b> All data is public and resets sometimes.<br>
+            Want a private forum? <a href="https://jsonbin.io" target="_blank" style="color:#88f;">Create your own JSONBin.io bin</a> and set the BIN ID in the code.
+          </div>
+        `;
+        // Autofocus thread title
+        setTimeout(() => { document.getElementById("thread-title")?.focus(); }, 1);
+      }
     }
 
-    window.onload = () => {
-      renderThreads();
+    // == EVENT HANDLERS (exposed globally) ==
+    window.forumOpen = function(id) {
+      setState({selected: id});
     };
+    window.forumBack = function() {
+      setState({selected: null});
+    };
+    window.forumSetAuthor = function(val) {
+      state.author = val.replace(/[^a-zA-Z0-9_.-]/g, "").slice(0,20) || "anon";
+      localStorage.haxorAuthor = state.author;
+      render();
+    };
+    window.forumNewThread = async function() {
+      const title = document.getElementById("thread-title").value;
+      await addThread(title, state.author);
+      document.getElementById("thread-title").value = "";
+      render();
+    };
+    window.forumReply = async function() {
+      const content = document.getElementById("reply-content").value;
+      await addPost(state.selected, content, state.author);
+      document.getElementById("reply-content").value = "";
+      render();
+    };
+
+    // -- INITIALIZE --
+    load();
   </script>
 </body>
 </html>
