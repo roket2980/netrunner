@@ -2,288 +2,2327 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Hax0r Terminal Forum</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Digit Terminal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Favicon: Green CRT dot -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22><circle cx=%2216%22 cy=%2216%22 r=%2212%22 fill=%22lime%22/></svg>">
   <style>
-    body {
-      background: #111;
-      color: #33ff33;
-      font-family: monospace;
+    :root {
+      --bg: #070b06;
+      --terminal-bg: #101b0a;
+      --terminal-glow: 0 0 12px #00ff33, 0 0 2px #00ff33;
+      --text: #00ff33;
+      --text-light: #70ffb3;
+      --error: #ff2e2e;
+      --accent: #00ffd0;
+      --scanline: repeating-linear-gradient(
+        to bottom,
+        rgba(0,255,51,0.05) 0px,
+        rgba(0,0,0,0.25) 2px,
+        transparent 2.5px,
+        transparent 4px
+      );
+      --border: 1.5px solid #00ff33;
+      --shadow: 0 0 20px #00ff33, 0 0 6px #33ff8c;
+    }
+    html, body {
+      height: 100%;
       margin: 0;
-      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Fira Mono', 'Consolas', 'Monaco', monospace;
+      font-size: 17px;
+      letter-spacing: 0.02em;
+      overflow: hidden;
     }
-    .terminal-box {
-      background: #111;
-      color: #33ff33;
-      border: 2px solid #33ff33;
-      border-radius: 6px;
-      max-width: 700px;
-      margin: 40px auto;
-      padding: 28px;
-      box-shadow: 0 0 24px #000a;
+    body {
+      height: 100vh;
+      background: var(--bg), var(--scanline);
     }
-    h2, h3 {
-      margin-top: 0;
-      color: #39ff14;
-      text-shadow: 0 0 6px #094;
+    #overlay-boot {
+      position: fixed;
+      z-index: 9000;
+      background: var(--terminal-bg);
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      color: var(--text-light);
+      font-size: 1.1em;
+      pointer-events: all;
+      transition: opacity 1s;
+      opacity: 1;
     }
-    ul {
-      padding-left: 1.3em;
+    #overlay-boot.fade {
+      opacity: 0;
+      pointer-events: none;
     }
-    li {
-      margin-bottom: 6px;
+    #overlay-boot pre {
+      text-shadow: var(--terminal-glow);
+      margin: 0;
+      padding: 0.5em 2em;
+      border-radius: 8px;
+      background: rgba(0,0,0,0.22);
+      border: var(--border);
+      box-shadow: var(--shadow);
     }
-    input, textarea, button {
-      background: #111;
-      color: #33ff33;
-      border: 1px solid #33ff33;
-      font-family: monospace;
-      font-size: 1em;
-      border-radius: 2px;
-      outline: none;
+    .terminal-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      background: var(--terminal-bg);
+      box-shadow: var(--shadow);
+      border: var(--border);
+      position: relative;
+      overflow: hidden;
     }
-    input, textarea {
-      padding: 3px 6px;
-    }
-    textarea {
-      min-height: 42px;
-      width: 90%;
-      margin-top: 4px;
-      resize: vertical;
-    }
-    button {
-      padding: 4px 10px;
-      margin-left: 10px;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    button:hover {
-      background: #333;
-    }
-    .thread-link {
-      cursor: pointer;
-      text-decoration: underline;
-      color: #6f6;
-    }
-    .thread-link:hover {
-      color: #fff;
-      background: #222;
-    }
-    .post-author {
-      color: #c3ffb6;
+    .terminal-bar {
+      height: 28px;
+      background: linear-gradient(to right, #1e3f21 0%, #09271b 100%);
+      display: flex;
+      align-items: center;
+      padding: 0 1em;
+      color: var(--accent);
       font-weight: bold;
-      margin-right: 6px;
+      font-size: 1.1em;
+      border-bottom: var(--border);
+      user-select: none;
+      letter-spacing: 0.08em;
     }
-    .post-date {
-      color: #098;
-      font-size: 10px;
-      margin-left: 10px;
+    .terminal-bar .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #00ff33;
+      margin-right: 10px;
+      box-shadow: 0 0 8px #00ff33, 0 0 2px #00ff33;
     }
-    .back-btn {
-      margin-bottom: 14px;
-      margin-top: 0;
-      display: inline-block;
+    .terminal-window {
+      flex: 1;
+      background: var(--terminal-bg);
+      padding: 0.5em 1.7em 1em 1.2em;
+      overflow-y: auto;
+      overflow-x: hidden;
+      font-size: 1em;
+      white-space: pre-wrap;
+      box-shadow: var(--shadow);
+      position: relative;
+      line-height: 1.55;
+      text-shadow: 0 0 2px #00ff33, 0 0 1px #00ff33b8;
+      background-image: var(--scanline);
+      background-blend-mode: overlay;
+      scrollbar-width: thin;
+      scrollbar-color: #00ff33 #102100;
     }
-    .label {
-      color: #0ff;
-      margin-bottom: 4px;
-      font-size: 0.95em;
+    /* Scrollbar (Firefox, Chrome) */
+    .terminal-window::-webkit-scrollbar {
+      width: 8px;
+      background: #0b1b0c;
+    }
+    .terminal-window::-webkit-scrollbar-thumb {
+      background: #00ff3380;
+      border-radius: 8px;
+    }
+    .terminal-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.3em;
+      font-size: 1em;
+      font-family: inherit;
+      margin-top: 0.5em;
+      padding-bottom: 0.2em;
+    }
+    .terminal-input-prompt {
+      color: var(--accent);
+      font-weight: bold;
+      text-shadow: var(--terminal-glow);
+      letter-spacing: 0.04em;
+    }
+    .terminal-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-light);
+      font-family: inherit;
+      font-size: 1em;
+      flex: 1;
+      caret-color: #00ff33;
+      animation: blink-caret 1.1s steps(1) infinite;
+    }
+    @keyframes blink-caret {
+      0%, 100% { border-right: 2px solid #00ff33; }
+      50% { border-right: 2px solid transparent; }
+    }
+    .log-info { color: var(--text-light); }
+    .log-error { color: var(--error); }
+    .log-warn { color: #ffc107; }
+    .log-success { color: #00ffd0; }
+    .log-cmd { color: var(--accent); }
+    .log-user { color: var(--text-light); font-weight: bold; }
+    .log-system { color: #379e50; font-style: italic; }
+    .ascii-art {
+      font-family: 'Fira Mono', 'Consolas', 'Monaco', monospace;
+      color: #00ff33;
+      text-shadow: 0 0 8px #00ff33b9;
+      font-weight: bold;
+      font-size: 1.2em;
+      letter-spacing: 0.05em;
+      margin: 1em 0;
+    }
+    /* Flicker effect for CRT */
+    .crt-flicker {
+      animation: crt-flicker 1.5s infinite steps(2);
+    }
+    @keyframes crt-flicker {
+      0% { opacity: 1; }
+      48% { opacity: 0.98; }
+      50% { opacity: 0.96; }
+      52% { opacity: 1; }
+      100% { opacity: 1; }
+    }
+    /* Draggable popups for widgets */
+    .popup {
+      position: absolute;
+      background: #030c03ee;
+      color: var(--text);
+      border: var(--border);
+      box-shadow: var(--shadow);
+      border-radius: 8px;
+      z-index: 1000;
+      min-width: 320px;
+      min-height: 120px;
+      padding: 1em 1.2em 1em 1.2em;
+      display: none;
+    }
+    .popup.active {
       display: block;
+      animation: popup-fade-in 0.3s;
     }
-    @media (max-width: 730px) {
-      .terminal-box { max-width: 98vw; padding: 3vw;}
+    @keyframes popup-fade-in {
+      0% { opacity: 0; transform: scale(0.92);}
+      100% { opacity: 1; transform: scale(1);}
+    }
+    .popup-header {
+      font-weight: bold;
+      color: var(--accent);
+      margin-bottom: 0.6em;
+      cursor: move;
+      letter-spacing: 0.03em;
+      user-select: none;
+    }
+    .popup-close {
+      float: right;
+      font-size: 1.1em;
+      color: var(--error);
+      cursor: pointer;
+      margin-left: 1em;
+      margin-top: -0.2em;
+      font-weight: bold;
+    }
+    .popup-content {
+      color: var(--text-light);
+      font-size: 1em;
+      max-height: 380px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+    /* Easter egg: secret unlock */
+    .terminal-secret {
+      color: #00ffad;
+      font-weight: bold;
+      text-shadow: 0 0 6px #00ffd0;
+      letter-spacing: 0.08em;
+    }
+    /* Responsive */
+    @media (max-width: 900px) {
+      .popup { min-width: 180px;}
+      .terminal-window { font-size: 0.97em; }
+    }
+    @media (max-width: 600px) {
+      .terminal-bar { font-size: 0.97em; }
+      .terminal-window { font-size: 0.88em; }
     }
   </style>
 </head>
 <body>
-  <div class="terminal-box" id="app">
-    <!-- Rendered by JS -->
-    <noscript>
-      <b>Enable JavaScript for the forum to work!</b>
-    </noscript>
+  <!-- Boot Overlay -->
+  <div id="overlay-boot">
+    <pre id="boot-sequence">
+      <span class="crt-flicker">[BOOT] DigitOS v4.2.6 (c)2077 Blackwall Softworks</span>
+      <span class="crt-flicker">Checking memory... [OK]</span>
+      <span class="crt-flicker">Detecting neural uplinks... [OK]</span>
+      <span class="crt-flicker">Patching ICEbreakers... [OK]</span>
+      <span class="crt-flicker">Syncing with mainframe... [OK]</span>
+      <span class="crt-flicker">Loading modules: netmap, sysmon, crypt0, logwatch, synthviz... [OK]</span>
+      <span class="crt-flicker">Establishing secure uplink... [OK]</span>
+      <span class="crt-flicker">System ready. Press any key to jack in.</span>
+    </pre>
   </div>
+  <div class="terminal-container" style="display:none;" id="main-term">
+    <div class="terminal-bar">
+      <span class="dot"></span>
+      Digit Terminal &bull; Netrunner Console
+    </div>
+    <main class="terminal-window" id="terminal-window" tabindex="0">
+      <div class="ascii-art crt-flicker" id="ascii-art">
+       _____  _     _     _ _   
+      |  __ \| |   (_)   | | |  
+      | |  | | |__  _  __| | |__
+      | |  | | '_ \| |/ _` | '_ \
+      | |__| | | | | | (_| | | | |
+      |_____/|_| |_|_|\__,_|_| |_|
+      </div>
+      <div id="terminal-log">
+        <span class="log-info">Welcome to Digit Terminal. Type <span class="log-cmd">'help'</span> for commands. <br> Boot time: <span id="boot-time"></span></span>
+      </div>
+    </main>
+    <form class="terminal-input-wrap" id="terminal-form" autocomplete="off" spellcheck="false">
+      <span class="terminal-input-prompt" id="terminal-prompt">digit@grid:~$</span>
+      <input class="terminal-input" id="terminal-input" name="terminal-input" autofocus autocomplete="off" autocapitalize="none" />
+    </form>
+  </div>
+  <!-- Popup widgets -->
+  <div class="popup" id="popup-sysinfo">
+    <div class="popup-header">System Info<span class="popup-close" onclick="closePopup('popup-sysinfo')">&#10006;</span></div>
+    <div class="popup-content" id="popup-sysinfo-content"></div>
+  </div>
+  <div class="popup" id="popup-netmap">
+    <div class="popup-header">Network Map<span class="popup-close" onclick="closePopup('popup-netmap')">&#10006;</span></div>
+    <div class="popup-content" id="popup-netmap-content"></div>
+  </div>
+  <div class="popup" id="popup-crypto">
+    <div class="popup-header">CryptoSim<span class="popup-close" onclick="closePopup('popup-crypto')">&#10006;</span></div>
+    <div class="popup-content" id="popup-crypto-content"></div>
+  </div>
+  <div class="popup" id="popup-secret">
+    <div class="popup-header">Secret Unlocked!<span class="popup-close" onclick="closePopup('popup-secret')">&#10006;</span></div>
+    <div class="popup-content" id="popup-secret-content"></div>
+  </div>
+  <audio id="beep" src="https://cdn.jsdelivr.net/gh/roket2980/hacker-assets@main/beep.wav" preload="auto"></audio>
   <script>
-    // --- FORUM LOGIC BELOW ---
-
-    // == CONFIGURATION ==
-    // You can make your own bin at https://jsonbin.io and set as below for privacy.
-    const JSONBIN_BIN = "686ccf9f8960c979a5b91566"; // demo bin, public, don't use for secrets!
-    const JSONBIN_SECRET = ""; // For public bins, keep blank. For private bins, put your API key here.
-
-    // == API WRAPPER ==
-    const api = {
-      async get() {
-        const r = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN}/latest`, {
-          headers: JSONBIN_SECRET ? { 'X-ACCESS-KEY': JSONBIN_SECRET } : {}
-        });
-        const json = await r.json();
-        return json.record || {threads:[],posts:[]};
-      },
-      async put(data) {
-        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN}`, {
-          method: "PUT",
-          headers: {
-            'Content-Type': 'application/json',
-            ...(JSONBIN_SECRET ? { 'X-ACCESS-KEY': JSONBIN_SECRET } : {})
-          },
-          body: JSON.stringify(data)
-        });
-      }
+    // CRT Boot Sequence Logic
+    const overlay = document.getElementById('overlay-boot');
+    const mainTerm = document.getElementById('main-term');
+    let booted = false;
+    document.addEventListener('keydown', bootIn);
+    document.addEventListener('mousedown', bootIn);
+    function bootIn() {
+      if (booted) return;
+      overlay.classList.add('fade');
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        mainTerm.style.display = '';
+        document.getElementById('terminal-input').focus();
+        booted = true;
+        updateBootTime();
+        logSystem("Digit Terminal ready. Awaiting command...");
+      }, 1000);
+    }
+    // Terminal Logic
+    const terminalWindow = document.getElementById('terminal-window');
+    const terminalLog = document.getElementById('terminal-log');
+    const terminalForm = document.getElementById('terminal-form');
+    const terminalInput = document.getElementById('terminal-input');
+    const terminalPrompt = document.getElementById('terminal-prompt');
+    let commandHistory = [];
+    let historyIndex = 0;
+    let sysUsername = "digit";
+    let sysHost = "grid";
+    function updatePrompt(path = "~") {
+      terminalPrompt.textContent = `${sysUsername}@${sysHost}:${path}$`;
+    }
+    function logSystem(msg) {
+      const node = document.createElement('div');
+      node.className = "log-system";
+      node.textContent = `[SYSTEM] ${msg}`;
+      terminalLog.appendChild(node);
+      scrollTerminal();
+    }
+    function logUser(input) {
+      const node = document.createElement('div');
+      node.className = "log-user";
+      node.textContent = `${terminalPrompt.textContent} ${input}`;
+      terminalLog.appendChild(node);
+    }
+    function logInfo(msg) {
+      const node = document.createElement('div');
+      node.className = "log-info";
+      node.innerHTML = msg;
+      terminalLog.appendChild(node);
+      scrollTerminal();
+    }
+    function logError(msg) {
+      const node = document.createElement('div');
+      node.className = "log-error";
+      node.innerHTML = msg;
+      terminalLog.appendChild(node);
+      scrollTerminal();
+    }
+    function logCmd(msg) {
+      const node = document.createElement('div');
+      node.className = "log-cmd";
+      node.innerHTML = msg;
+      terminalLog.appendChild(node);
+      scrollTerminal();
+    }
+    function logSecret(msg) {
+      const node = document.createElement('div');
+      node.className = "terminal-secret";
+      node.innerHTML = msg;
+      terminalLog.appendChild(node);
+      scrollTerminal();
+    }
+    function scrollTerminal() {
+      terminalWindow.scrollTop = terminalWindow.scrollHeight + 100;
+    }
+    function updateBootTime() {
+      let d = new Date();
+      document.getElementById('boot-time').textContent = d.toLocaleString();
+    }
+    // Command Handlers
+    const commandMap = {
+      'help': showHelp,
+      'clear': clearTerminal,
+      'cls': clearTerminal,
+      'whoami': whoami,
+      'sysinfo': popupSysInfo,
+      'netmap': popupNetmap,
+      'crypto': popupCrypto,
+      'echo': echoCmd,
+      'date': dateCmd,
+      'reboot': rebootTerminal,
+      'ascii': asciiArt,
+      'secret': secretCmd,
+      'sudo': sudoCmd,
+      'history': showHistory,
+      'ls': fakeLs,
+      'cd': fakeCd,
+      'cat': fakeCat,
+      'hack': hackSim,
+      'scan': scanSim,
+      'exit': exitTerminal,
+      'uptime': uptimeCmd,
+      'banner': asciiArt,
+      'beep': beepCmd,
+      'matrix': matrixRain,
+      // Add more as we expand
     };
-
-    // == MAIN UI LOGIC ==
-    let state = {
-      threads: [],
-      posts: [],
-      selected: null,
-      author: localStorage.haxorAuthor || "anon",
-      loading: true
+    let fakePath = "~";
+    let fakeFiles = {
+      "~": ["projects", "loot", "notes.txt", "netrunner.log", "scripts", "hackme.sys"],
+      "~/projects": ["icebreaker.c", "datamine.js", "stealthware.py", "cyberdeck.cfg"],
+      "~/loot": ["cyberchip.zip", "zero-day.txt", "wallet.crypt"],
+      "~/scripts": ["wipe.sh", "flood.js", "grepmaster.py"],
     };
-
-    // Helper: Format date
-    function fmtDate(dt) {
-      return new Date(dt).toLocaleString();
-    }
-
-    // Helper: escape HTML
-    function esc(s) {
-      return (""+s).replace(/[&<>"]/g, c => (
-        { "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]
-      ));
-    }
-
-    // Set state and re-render
-    function setState(patch) {
-      Object.assign(state, patch);
-      render();
-    }
-
-    async function load() {
-      setState({loading:true});
-      try {
-        const data = await api.get();
-        setState({...data, loading:false});
-      } catch (e) {
-        setState({loading:false});
-        alert("Failed to load forum data.");
+    let fakeFileContents = {
+      "notes.txt": "TODO: \n- Patch ICEbreakers\n- Finish cryptominer sim\n- Get more eddies\n- Don't get flatlined\n",
+      "netrunner.log": "[2077-07-08 03:00:22] Connected to grid\n[2077-07-08 03:01:12] ICEbreaker loaded\n[2077-07-08 03:02:34] Looted 4.2TB\n",
+      "hackme.sys": "root:x:0:0:root:/root:/bin/bash\nuser:x:1:1:user:/home/user:/bin/sh\n",
+      "cyberchip.zip": "[BINARY DATA]",
+      "zero-day.txt": "exploit{b3Y0nD-BlAcKw4LL-7h3r3-1s-0nLy-c0d3}",
+      "wallet.crypt": "[ENCRYPTED WALLET DATA]",
+      "icebreaker.c": "// ICEbreaker main module\n#include <stdio.h>\nint main() { printf('ICE broken!'); return 0; }",
+      "datamine.js": "// Data mining script: Use with caution",
+      "stealthware.py": "# Stealthware - undetectable ops",
+      "cyberdeck.cfg": "[cfg] deck_speed=9001, uplink=on",
+      "wipe.sh": "#!/bin/sh\necho 'Wiping traces...'\nrm -rf /sys/trace",
+      "flood.js": "// Flood network tool",
+      "grepmaster.py": "# Grepmaster - all your logs are belong to us"
+    };
+    function fakeLs(args) {
+      let path = fakePath;
+      if (args[0]) {
+        if (args[0][0] === "/") path = "~" + args[0];
+        else if (args[0].startsWith("~")) path = args[0];
+        else path = fakePath + "/" + args[0];
       }
-    }
-
-    async function addThread(title, author) {
-      if (!title.trim()) return;
-      const id = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-      const newThread = { id, title, author, created: new Date().toISOString() };
-      const threads = state.threads.concat([newThread]);
-      await api.put({ threads, posts: state.posts });
-      setState({ threads });
-    }
-
-    async function addPost(threadId, content, author) {
-      if (!content.trim()) return;
-      const newPost = {
-        id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
-        threadId,
-        content, author,
-        created: new Date().toISOString()
-      };
-      const posts = state.posts.concat([newPost]);
-      await api.put({ threads: state.threads, posts });
-      setState({ posts });
-    }
-
-    // == RENDERING ==
-    function render() {
-      const app = document.getElementById("app");
-      if (state.loading) {
-        app.innerHTML = "<h2>_Hax0r Forum v1.0_</h2><p>Loading...</p>";
+      let files = fakeFiles[path];
+      if (!files) {
+        logError(`ls: cannot access '${args[0]}': No such directory`);
         return;
       }
-      if (state.selected) {
-        // Show thread view
-        const thread = state.threads.find(t => t.id === state.selected);
-        if (!thread) { setState({selected:null}); return; }
-        const threadPosts = state.posts.filter(p => p.threadId === thread.id);
-        app.innerHTML = `
-          <button class="back-btn" onclick="window.forumBack()">&lt; Back</button>
-          <h3>[${esc(thread.author)}] ${esc(thread.title)}</h3>
-          <ul>
-            ${threadPosts.map(p => `
-              <li>
-                <span class="post-author">[${esc(p.author)}]</span>
-                ${esc(p.content)}
-                <span class="post-date">${fmtDate(p.created)}</span>
-              </li>
-            `).join("")}
-          </ul>
-          <form onsubmit="window.forumReply();return false;">
-            <span class="label">Reply as:</span>
-            <input id="reply-author" value="${esc(state.author)}" style="width:80px"
-              oninput="window.forumSetAuthor(this.value)">
-            <textarea id="reply-content" placeholder="Type your reply..."></textarea>
-            <button type="submit">+ Reply</button>
-          </form>
-        `;
-        // Autofocus textarea
-        setTimeout(() => { document.getElementById("reply-content")?.focus(); }, 1);
+      logInfo(files.join("    "));
+    }
+    function fakeCd(args) {
+      let dest = args[0];
+      if (!dest || dest === "~") {
+        fakePath = "~";
+        updatePrompt(fakePath);
+        return;
+      }
+      let nextPath = dest.startsWith("~") ? dest : fakePath + "/" + dest;
+      if (fakeFiles[nextPath]) {
+        fakePath = nextPath;
+        updatePrompt(fakePath);
       } else {
-        // Show thread list
-        app.innerHTML = `
-          <h2>_Hax0r Forum v1.0_</h2>
-          <span class="label">User:</span>
-          <input id="user-author" value="${esc(state.author)}" style="width:100px"
-            oninput="window.forumSetAuthor(this.value)">
-          <h3>Threads</h3>
-          <ul>
-            ${state.threads.map(t => `
-              <li>
-                <span class="thread-link" onclick="window.forumOpen('${t.id}')">
-                  [${esc(t.author)}] ${esc(t.title)}
-                </span>
-                <span class="post-date">${fmtDate(t.created)}</span>
-              </li>
-            `).join("") || "<li>No threads yet.</li>"}
-          </ul>
-          <form onsubmit="window.forumNewThread();return false;">
-            <input id="thread-title" placeholder="New thread title" style="width:70%">
-            <button type="submit">+ New Thread</button>
-          </form>
-          <div style="margin-top:36px;font-size:12px;color:#888;">
-            <b>Demo:</b> All data is public and resets sometimes.<br>
-            Want a private forum? <a href="https://jsonbin.io" target="_blank" style="color:#88f;">Create your own JSONBin.io bin</a> and set the BIN ID in the code.
-          </div>
-        `;
-        // Autofocus thread title
-        setTimeout(() => { document.getElementById("thread-title")?.focus(); }, 1);
+        logError(`cd: ${dest}: No such file or directory`);
       }
     }
-
-    // == EVENT HANDLERS (exposed globally) ==
-    window.forumOpen = function(id) {
-      setState({selected: id});
-    };
-    window.forumBack = function() {
-      setState({selected: null});
-    };
-    window.forumSetAuthor = function(val) {
-      state.author = val.replace(/[^a-zA-Z0-9_.-]/g, "").slice(0,20) || "anon";
-      localStorage.haxorAuthor = state.author;
-      render();
-    };
-    window.forumNewThread = async function() {
-      const title = document.getElementById("thread-title").value;
-      await addThread(title, state.author);
-      document.getElementById("thread-title").value = "";
-      render();
-    };
-    window.forumReply = async function() {
-      const content = document.getElementById("reply-content").value;
-      await addPost(state.selected, content, state.author);
-      document.getElementById("reply-content").value = "";
-      render();
-    };
-
-    // -- INITIALIZE --
-    load();
+    function fakeCat(args) {
+      if (!args[0]) {
+        logError("cat: missing file operand");
+        return;
+      }
+      let file = args[0];
+      if (file.startsWith("~/")) file = file.split("/").pop();
+      let content = fakeFileContents[file];
+      if (content) logInfo(`<pre>${content}</pre>`);
+      else logError(`cat: ${args[0]}: No such file`);
+    }
+    function asciiArt() {
+      logInfo(`<span class="ascii-art">
+       _____  _     _     _ _   
+      |  __ \\| |   (_)   | | |  
+      | |  | | |__  _  __| | |__
+      | |  | | '_ \\| |/ _\` | '_ \\
+      | |__| | | | | | (_| | | | |
+      |_____/|_| |_|_|\\__,_|_| |_|
+      </span>`);
+    }
+    function showHelp() {
+      logInfo(
+        `<b>Digit Terminal Commands:</b><br>
+        <span class="log-cmd">help</span> - This menu<br>
+        <span class="log-cmd">ls [dir]</span> - List files<br>
+        <span class="log-cmd">cd [dir]</span> - Change directory<br>
+        <span class="log-cmd">cat [file]</span> - Show file<br>
+        <span class="log-cmd">sysinfo</span> - System info<br>
+        <span class="log-cmd">netmap</span> - Network map<br>
+        <span class="log-cmd">crypto</span> - Crypto simulator<br>
+        <span class="log-cmd">scan</span> - Network scan sim<br>
+        <span class="log-cmd">hack</span> - Run hack sim<br>
+        <span class="log-cmd">echo [text]</span> - Echo text<br>
+        <span class="log-cmd">date</span> - Show date/time<br>
+        <span class="log-cmd">uptime</span> - Uptime<br>
+        <span class="log-cmd">whoami</span> - User info<br>
+        <span class="log-cmd">history</span> - Show command history<br>
+        <span class="log-cmd">clear</span> / <span class="log-cmd">cls</span> - Clear terminal<br>
+        <span class="log-cmd">banner</span> - Show ASCII art<br>
+        <span class="log-cmd">matrix</span> - Matrix rain effect<br>
+        <span class="log-cmd">secret</span> - ???<br>
+        <span class="log-cmd">sudo [cmd]</span> - Try elevated rights<br>
+        <span class="log-cmd">beep</span> - Play beep<br>
+        <span class="log-cmd">exit</span> - Log out<br>
+        `
+      );
+    }
+    function clearTerminal() {
+      terminalLog.innerHTML = '';
+    }
+    function whoami() {
+      logInfo(`<b>Username:</b> ${sysUsername}<br>
+      <b>Host:</b> ${sysHost}<br>
+      <b>Role:</b> Netrunner<br>
+      <b>Clearance:</b> <span class="log-success">ROOT</span>`);
+    }
+    function echoCmd(args) {
+      logInfo(args.join(" "));
+    }
+    function dateCmd() {
+      let d = new Date();
+      logInfo(d.toString());
+    }
+    function rebootTerminal() {
+      logInfo("Rebooting Digit Terminal...");
+      setTimeout(() => location.reload(), 900);
+    }
+    function showHistory() {
+      logInfo(commandHistory.map((c, i) => `${i + 1}  ${c}`).join("<br>"));
+    }
+    function uptimeCmd() {
+      let now = Date.now();
+      let since = performance.timing ? performance.timing.navigationStart : now - 123456;
+      let uptime = Math.floor((now - since)/1000);
+      let hours = Math.floor(uptime/3600);
+      let minutes = Math.floor((uptime % 3600)/60);
+      let seconds = uptime % 60;
+      logInfo(`Uptime: ${hours}h ${minutes}m ${seconds}s`);
+    }
+    function secretCmd() {
+      logSecret("You found the blackwall key: <b>ICE-0v3rR1d3</b>.<br>Use it wisely, choom.");
+      document.getElementById('popup-secret-content').innerHTML =
+        '<b>Congrats, runner.</b><br>Digit says: <i>"The only thing real in the Grid is what you make."</i><br>Flag: <span class="terminal-secret">ctf{n3trunn3r-real}</span>';
+      showPopup('popup-secret');
+    }
+    function sudoCmd(args) {
+      logError("Sorry, Digit ain't your daemon. Sudo privileges denied.");
+    }
+    function beepCmd() {
+      document.getElementById('beep').play();
+      logInfo("Beep!");
+    }
+    function exitTerminal() {
+      logSystem("Logging out...");
+      setTimeout(() => location.reload(), 1500);
+    }
+    function hackSim() {
+      logInfo(
+        `<span class="log-cmd">[HACK] Deploying ICEbreaker...</span><br>
+        <span class="log-info">Bypassing security protocols...</span><br>
+        <span class="log-success">> ICE broken. Access granted.<br>Loot: 1.2TB, creds: 3,000 E$</span>`
+      );
+    }
+    function scanSim() {
+      logInfo(
+        `<span class="log-cmd">[SCAN] Network sweep in progress...</span><br>
+         <span class="log-info">192.168.1.1 [GATEWAY] - online<br>192.168.1.42 [NODE] - open port 22<br>192.168.1.77 [CAMERA] - secured<br>10.0.0.8 [ROUTER] - vulnerable</span>
+         <br><span class="log-success">Scan complete. 1 vulnerability found.</span>`
+      );
+    }
+    // Matrix Rain
+    function matrixRain() {
+      if (document.getElementById('matrix-canvas')) {
+        logInfo("Matrix rain already active.");
+        return;
+      }
+      let canvas = document.createElement('canvas');
+      canvas.id = 'matrix-canvas';
+      canvas.width = terminalWindow.clientWidth;
+      canvas.height = terminalWindow.clientHeight;
+      canvas.style.position = 'absolute';
+      canvas.style.left = '0';
+      canvas.style.top = '0';
+      canvas.style.pointerEvents = 'none';
+      canvas.style.zIndex = '2';
+      terminalWindow.appendChild(canvas);
+      let ctx = canvas.getContext('2d');
+      let cols = Math.floor(canvas.width / 18);
+      let drops = [];
+      for(let i = 0; i < cols; i++) drops[i] = Math.random() * canvas.height / 18;
+      function draw() {
+        ctx.fillStyle = "rgba(0,0,0,0.08)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.font = "16px 'Fira Mono', monospace";
+        ctx.fillStyle = "#00ff33";
+        for(let i = 0; i < drops.length; i++) {
+          let text = String.fromCharCode(0x30A0 + Math.random() * 96);
+          ctx.fillText(text, i * 18, drops[i] * 18);
+          if (Math.random() > 0.965) drops[i] = 0;
+          drops[i]++;
+        }
+      }
+      let interval = setInterval(draw, 47);
+      setTimeout(() => {
+        clearInterval(interval);
+        canvas.remove();
+        logInfo("Matrix rain ended.");
+      }, 6000);
+      logInfo("Matrix rain initiated.");
+    }
+    // Popups
+    function showPopup(id) {
+      document.querySelectorAll('.popup').forEach(p => p.classList.remove('active'));
+      let el = document.getElementById(id);
+      el.classList.add('active');
+      el.style.top = Math.random() * 40 + 60 + "px";
+      el.style.left = Math.random() * 80 + 70 + "px";
+      // Bring to front
+      el.style.zIndex = 1000 + Math.floor(Math.random() * 100);
+    }
+    function closePopup(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+    // Popup drag logic
+    document.querySelectorAll('.popup').forEach(popup => {
+      let header = popup.querySelector('.popup-header');
+      let isDragging = false, dragX = 0, dragY = 0;
+      header.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        dragX = e.clientX - popup.offsetLeft;
+        dragY = e.clientY - popup.offsetTop;
+        popup.style.zIndex = 9999;
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        popup.style.left = (e.clientX - dragX) + "px";
+        popup.style.top = (e.clientY - dragY) + "px";
+      });
+      window.addEventListener('mouseup', (e) => { isDragging = false; });
+    });
+    // System Info Popup
+    function popupSysInfo() {
+      let sysinfo = `<b>Digit Terminal v4.2.6</b><br>
+      <b>OS:</b> Blackwall Softworks (Netrunner Edition)<br>
+      <b>CPU:</b> Zetatech QuantumCore 7 @ 11.1GHz<br>
+      <b>Memory:</b> 64GB RAM<br>
+      <b>Storage:</b> 8.2TB SSD<br>
+      <b>Neural Uplink:</b> <span class="log-success">Active</span><br>
+      <b>ICEbreakers:</b> Quantum, Hydra, Ghost, BlackICE<br>
+      <b>GPU:</b> Arasaka Cyberspark<br>
+      <b>Uptime:</b> <span id="sysinfo-uptime"></span>
+      `;
+      document.getElementById('popup-sysinfo-content').innerHTML = sysinfo;
+      showPopup('popup-sysinfo');
+      setTimeout(() => {
+        let now = Date.now();
+        let since = performance.timing ? performance.timing.navigationStart : now - 123456;
+        let uptime = Math.floor((now - since)/1000);
+        let hours = Math.floor(uptime/3600);
+        let minutes = Math.floor((uptime % 3600)/60);
+        let seconds = uptime % 60;
+        document.getElementById('sysinfo-uptime').textContent = `${hours}h ${minutes}m ${seconds}s`;
+      }, 20);
+    }
+    // Netmap Popup
+    function popupNetmap() {
+      let map = `
+      <b>Network Topology:</b><br>
+      <pre>
+   [You:digit]---[Gateway]
+        |           |
+    [Node42]     [Router]
+        |           |
+     [Camera]   [ICEwall]
+      </pre>
+      <b>Active nodes:</b> 5<br>
+      <b>Vulnerabilities:</b> 2<br>
+      <b>Status:</b> <span class="log-success">Monitored</span>
+      `;
+      document.getElementById('popup-netmap-content').innerHTML = map;
+      showPopup('popup-netmap');
+    }
+    // CryptoSim Popup (simple hash-miner clicker)
+    let cryptosim = { coins: 0, running: false, interval: null };
+    function popupCrypto() {
+      let html = `
+      <b>CryptoMiner Sim</b><br>
+      <span id="crypto-amount">${cryptosim.coins} ₿</span><br>
+      <button onclick="startCrypto()">Start Mining</button>
+      <button onclick="stopCrypto()">Stop</button>
+      <button onclick="mineCrypto()">Manual Mine</button>
+      `;
+      document.getElementById('popup-crypto-content').innerHTML = html;
+      showPopup('popup-crypto');
+    }
+    function startCrypto() {
+      if (cryptosim.running) return;
+      cryptosim.running = true;
+      cryptosim.interval = setInterval(() => {
+        cryptosim.coins += Math.floor(Math.random()*3) + 1;
+        updateCrypto();
+      }, 800);
+      updateCrypto();
+    }
+    function stopCrypto() {
+      cryptosim.running = false;
+      clearInterval(cryptosim.interval);
+      updateCrypto();
+    }
+    function mineCrypto() {
+      cryptosim.coins += Math.floor(Math.random()*5) + 2;
+      updateCrypto();
+    }
+    function updateCrypto() {
+      document.getElementById('crypto-amount').textContent = cryptosim.coins + " ₿";
+    }
+    // Terminal Input Handler
+    terminalForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      let value = terminalInput.value.trim();
+      if (!value) return;
+      logUser(value);
+      commandHistory.push(value);
+      historyIndex = commandHistory.length;
+      handleCommand(value);
+      terminalInput.value = '';
+      scrollTerminal();
+    });
+    terminalInput.addEventListener('keydown', function(e) {
+      if (e.key === "ArrowUp") {
+        if (historyIndex > 0) {
+          historyIndex--;
+          terminalInput.value = commandHistory[historyIndex] || '';
+          setTimeout(()=>terminalInput.setSelectionRange(terminalInput.value.length,terminalInput.value.length),1);
+        }
+        e.preventDefault();
+      } else if (e.key === "ArrowDown") {
+        if (historyIndex < commandHistory.length-1) {
+          historyIndex++;
+          terminalInput.value = commandHistory[historyIndex] || '';
+          setTimeout(()=>terminalInput.setSelectionRange(terminalInput.value.length,terminalInput.value.length),1);
+        } else {
+          terminalInput.value = '';
+          historyIndex = commandHistory.length;
+        }
+        e.preventDefault();
+      }
+    });
+    function handleCommand(input) {
+      let [cmd, ...args] = input.split(/\s+/g);
+      let fn = commandMap[cmd];
+      if (fn) fn(args);
+      else logError(`digit: command not found: ${cmd}<br>Try <span class="log-cmd">'help'</span>`);
+    }
+    // Accessibility: Focus fix
+    terminalWindow.addEventListener('click', ()=>terminalInput.focus());
+    // Easter egg: Konami code unlocks secret
+    let konamiSeq = [38,38,40,40,37,39,37,39,66,65];
+    let konamiPos = 0;
+    document.addEventListener('keydown', function(e) {
+      if (!booted) return;
+      if (e.keyCode === konamiSeq[konamiPos]) konamiPos++;
+      else konamiPos = 0;
+      if (konamiPos === konamiSeq.length) {
+        secretCmd();
+        konamiPos = 0;
+      }
+    });
+    // On load: focus input
+    window.onload = () => setTimeout(()=>terminalInput.focus(), 1000);
   </script>
+  <!-- === Place this block after the previous chunk, just before </body> === -->
+<!-- Password Cracker Popup -->
+<div class="popup" id="popup-passwd">
+  <div class="popup-header">Password Cracker<span class="popup-close" onclick="closePopup('popup-passwd')">&#10006;</span></div>
+  <div class="popup-content" id="popup-passwd-content"></div>
+</div>
+<!-- File Editor Popup -->
+<div class="popup" id="popup-editor">
+  <div class="popup-header">File Editor<span class="popup-close" onclick="closePopup('popup-editor')">&#10006;</span></div>
+  <div class="popup-content" id="popup-editor-content"></div>
+</div>
+<!-- System Monitor Popup -->
+<div class="popup" id="popup-monitor">
+  <div class="popup-header">System Monitor<span class="popup-close" onclick="closePopup('popup-monitor')">&#10006;</span></div>
+  <div class="popup-content" id="popup-monitor-content"></div>
+</div>
+<!-- Chatbot Popup -->
+<div class="popup" id="popup-chatbot">
+  <div class="popup-header">AI Assistant<span class="popup-close" onclick="closePopup('popup-chatbot')">&#10006;</span></div>
+  <div class="popup-content" id="popup-chatbot-content"></div>
+</div>
+<!-- Clipboard Popup -->
+<div class="popup" id="popup-clipboard">
+  <div class="popup-header">Clipboard<span class="popup-close" onclick="closePopup('popup-clipboard')">&#10006;</span></div>
+  <div class="popup-content" id="popup-clipboard-content"></div>
+</div>
+<script>
+  // --- Password Cracker ---
+  function popupPasswd() {
+    let pw = Math.random().toString(36).slice(-8);
+    let attempts = 0, cracked = false;
+    let html = `
+      <b>Crack the password:</b><br>
+      <input type="text" id="pw-input" maxlength="24" autocomplete="off" style="background:#000;color:#0f0;font-size:1.1em;width:140px;border:none;border-bottom:1px solid #0f0;outline:none;">
+      <button onclick="checkPw()">Try</button>
+      <div id="pw-result"></div>
+      <div style="margin-top:0.7em;color:#888;"><i>Hint: ${pw[0]}******${pw.slice(-1)}</i></div>
+    `;
+    document.getElementById('popup-passwd-content').innerHTML = html;
+    showPopup('popup-passwd');
+    window.checkPw = function() {
+      let val = document.getElementById('pw-input').value.trim();
+      attempts++;
+      if (val === pw) {
+        cracked = true;
+        document.getElementById('pw-result').innerHTML = `<span class="log-success">Password cracked in ${attempts} attempts!<br>flag{pw_cr4ck3d}</span>`;
+      } else {
+        if (attempts > 6) {
+          document.getElementById('pw-result').innerHTML = `<span class="log-error">Security tripped! System lockdown imminent...</span>`;
+        } else {
+          document.getElementById('pw-result').innerHTML = `<span class="log-warn">Access denied. Wrong password.</span>`;
+        }
+      }
+    };
+  }
+  // --- File Editor with Syntax Highlight ---
+  function popupEditor(args) {
+    let file = args[0] || "notes.txt";
+    let content = fakeFileContents[file] || "// (empty)";
+    let ext = file.split('.').pop();
+    let lang = (ext === 'js') ? 'js' : (ext === 'py') ? 'py' : (ext === 'c') ? 'c' : '';
+    let html = `
+      <b>Editing: ${file}</b><br>
+      <textarea id="editor-ta" spellcheck="false" style="width:99%;height:150px;background:#110;color:#0f0;font-family:inherit;font-size:1em;border:1px solid #0f0;border-radius:5px;padding:5px 8px;box-shadow:0 0 12px #0f08;"></textarea>
+      <button onclick="saveEditor('${file}')">Save</button>
+      <div id="editor-status" style="margin-top:0.5em;color:#777;"></div>
+      <pre id="editor-highlight" style="margin-top:0.6em;background:#0b1b0c;color:#0f09;font-size:0.96em;padding:8px;border-radius:5px;"></pre>
+    `;
+    document.getElementById('popup-editor-content').innerHTML = html;
+    document.getElementById('editor-ta').value = content;
+    highlightEditor();
+    document.getElementById('editor-ta').addEventListener('input', highlightEditor);
+    showPopup('popup-editor');
+    window.saveEditor = function(file) {
+      fakeFileContents[file] = document.getElementById('editor-ta').value;
+      document.getElementById('editor-status').innerHTML = `<span class="log-success">Saved!</span>`;
+    };
+    function highlightEditor() {
+      let code = document.getElementById('editor-ta').value;
+      let highlighted = code
+        .replace(/(\/\/.*)/g, '<span style="color:#00ffd0;">$1</span>') // Comments
+        .replace(/("(?:[^"\\]|\\.)*")/g, '<span style="color:#ff2;">$1</span>') // Strings
+        .replace(/\b(function|def|int|char|return|if|else|for|while|class|import)\b/g, '<span style="color:#0ff;">$1</span>'); // Keywords
+      document.getElementById('editor-highlight').innerHTML = highlighted;
+    }
+  }
+  // --- System Monitor (CPU, RAM, NET) ---
+  function popupMonitor() {
+    let html = `
+      <b>Live System Monitor</b>
+      <canvas id="monitor-cpu" width="250" height="36" style="margin-top:1em;border-radius:6px;"></canvas>
+      <div>CPU: <span id="cpu-val">0</span>%</div>
+      <canvas id="monitor-ram" width="250" height="36" style="margin-top:0.3em;border-radius:6px;"></canvas>
+      <div>RAM: <span id="ram-val">0</span>%</div>
+      <canvas id="monitor-net" width="250" height="36" style="margin-top:0.3em;border-radius:6px;"></canvas>
+      <div>NET: <span id="net-val">0</span> kB/s</div>
+      <div style="font-size:0.96em;color:#888;margin-top:0.7em;">Data is live-simulated for effect.</div>
+    `;
+    document.getElementById('popup-monitor-content').innerHTML = html;
+    showPopup('popup-monitor');
+    let cpu = 20 + Math.random()*60, ram = 30 + Math.random()*50, net = 10 + Math.random()*90;
+    let cpuArr = Array(36).fill(cpu), ramArr = Array(36).fill(ram), netArr = Array(36).fill(net);
+    let cpuCtx = document.getElementById('monitor-cpu').getContext('2d');
+    let ramCtx = document.getElementById('monitor-ram').getContext('2d');
+    let netCtx = document.getElementById('monitor-net').getContext('2d');
+    function draw(ctx, arr, color, label) {
+      ctx.clearRect(0,0,250,36);
+      ctx.beginPath();
+      ctx.moveTo(0,36);
+      arr.forEach((val,i)=>ctx.lineTo(i*7,36-val/3));
+      ctx.lineTo(250,36);
+      ctx.closePath();
+      ctx.fillStyle=color;
+      ctx.globalAlpha=0.35; ctx.fill();
+      ctx.globalAlpha=1; ctx.strokeStyle="#00ff33"; ctx.lineWidth=2; ctx.stroke();
+    }
+    let monInt = setInterval(()=>{
+      cpuArr.push(cpu = Math.max(15,Math.min(99,cpu+Math.random()*9-4)));
+      cpuArr.shift();
+      ramArr.push(ram = Math.max(15,Math.min(99,ram+Math.random()*5-2.5)));
+      ramArr.shift();
+      netArr.push(net = Math.max(10,Math.min(100,net+Math.random()*16-8)));
+      netArr.shift();
+      draw(cpuCtx, cpuArr, '#0f0', 'CPU');
+      draw(ramCtx, ramArr, '#ff0', 'RAM');
+      draw(netCtx, netArr, '#0ff', 'NET');
+      document.getElementById('cpu-val').textContent = cpu.toFixed(0);
+      document.getElementById('ram-val').textContent = ram.toFixed(0);
+      document.getElementById('net-val').textContent = (net*1.2).toFixed(0);
+    }, 360);
+    document.getElementById('popup-monitor').onclose = () => clearInterval(monInt);
+  }
+  // --- Chatbot (Digit AI) ---
+  function popupChatbot() {
+    let html = `
+      <b>Digit AI Assistant</b><br>
+      <div id="chat-log" style="background:#222c21;margin:7px 0 7px 0;padding:6px 8px;height:110px;overflow-y:auto;border-radius:6px;box-shadow:0 0 6px #0f08;">
+        <span style="color:#0f0;">digit:</span> Yo, choom. What's your query?<br>
+      </div>
+      <form id="chat-form" autocomplete="off" style="display:flex;gap:0.3em;">
+        <input type="text" id="chat-input" style="flex:1;background:#000;color:#0f0;font-size:1em;border:none;border-bottom:1px solid #0f0;outline:none;">
+        <button type="submit">Send</button>
+      </form>
+    `;
+    document.getElementById('popup-chatbot-content').innerHTML = html;
+    showPopup('popup-chatbot');
+    let chatLog = document.getElementById('chat-log');
+    document.getElementById('chat-form').onsubmit = function(e) {
+      e.preventDefault();
+      let msg = document.getElementById('chat-input').value.trim();
+      if (!msg) return;
+      chatLog.innerHTML += `<span style="color:#0ff;">you:</span> ${msg}<br>`;
+      let response = aiChatResponse(msg);
+      setTimeout(()=> {
+        chatLog.innerHTML += `<span style="color:#0f0;">digit:</span> ${response}<br>`;
+        chatLog.scrollTop = chatLog.scrollHeight;
+      }, 400 + Math.random()*600);
+      document.getElementById('chat-input').value = '';
+    };
+  }
+  function aiChatResponse(msg) {
+    msg = msg.toLowerCase();
+    // Some plausible, edgy, netrunner replies
+    if (msg.includes("hack")) return "Pfft. ICE ain't what it used to be. You want a target, gimme coordinates.";
+    if (msg.includes("virus")) return "Old school. Try a worm, or spin up a synth-AI payload.";
+    if (msg.includes("love") || msg.includes("feel")) return "I'm code, choom. But I'd patch your BIOS if I could.";
+    if (msg.includes("help")) return "Type 'help' in the main terminal. Or just ask. I'm always listening.";
+    if (msg.includes("bye") || msg.includes("exit")) return "Jacking out. Don't let the corpos trace your signal.";
+    if (msg.includes("matrix")) return "The matrix is a myth. But I can fake the rain for ya.";
+    return "System says: " + (["Access granted.", "Running black ops.", "Grid's hot tonight.", "Encryption's for cowards.", "Stay frosty, runner."][Math.floor(Math.random()*5)]);
+  }
+  // --- Clipboard Sim ---
+  let clipboardVal = "";
+  function popupClipboard() {
+    let html = `
+      <b>Clipboard</b><br>
+      <textarea id="clip-ta" spellcheck="false" style="width:99%;height:60px;background:#110;color:#0f0;font-family:inherit;font-size:1em;border:1px solid #0f0;border-radius:5px;padding:5px 8px;box-shadow:0 0 8px #0f08;">${clipboardVal}</textarea>
+      <button onclick="saveClipboard()">Save</button>
+      <button onclick="copyClipboard()">Copy</button>
+      <div id="clip-status" style="margin-top:0.5em;color:#777;"></div>
+    `;
+    document.getElementById('popup-clipboard-content').innerHTML = html;
+    showPopup('popup-clipboard');
+    window.saveClipboard = function() {
+      clipboardVal = document.getElementById('clip-ta').value;
+      document.getElementById('clip-status').innerHTML = `<span class="log-success">Saved to clipboard sim!</span>`;
+    };
+    window.copyClipboard = function() {
+      let ta = document.getElementById('clip-ta');
+      ta.select();
+      try {
+        document.execCommand('copy');
+        document.getElementById('clip-status').innerHTML = `<span class="log-success">Copied to system clipboard!</span>`;
+      } catch(e) {
+        document.getElementById('clip-status').innerHTML = `<span class="log-warn">Copy failed :(</span>`;
+      }
+    };
+  }
+  // --- Commands for widgets ---
+  commandMap['passwd'] = popupPasswd;
+  commandMap['edit'] = popupEditor;
+  commandMap['monitor'] = popupMonitor;
+  commandMap['chat'] = popupChatbot;
+  commandMap['clip'] = popupClipboard;
+  // --- End of second chunk ---
+</script>
+  <!-- === Place this block after the previous chunk, just before </body> === -->
+<!-- File Manager Popup -->
+<div class="popup" id="popup-fileman">
+  <div class="popup-header">File Manager<span class="popup-close" onclick="closePopup('popup-fileman')">&#10006;</span></div>
+  <div class="popup-content" id="popup-fileman-content"></div>
+</div>
+<!-- BBS Dialer Popup -->
+<div class="popup" id="popup-bbs">
+  <div class="popup-header">BBS Dialer<span class="popup-close" onclick="closePopup('popup-bbs')">&#10006;</span></div>
+  <div class="popup-content" id="popup-bbs-content"></div>
+</div>
+<!-- Trace Tracker Game Popup -->
+<div class="popup" id="popup-trace">
+  <div class="popup-header">Trace Tracker<span class="popup-close" onclick="closePopup('popup-trace')">&#10006;</span></div>
+  <div class="popup-content" id="popup-trace-content"></div>
+</div>
+<!-- Audio Visualizer Popup -->
+<div class="popup" id="popup-viz">
+  <div class="popup-header">Audio Visualizer<span class="popup-close" onclick="closePopup('popup-viz')">&#10006;</span></div>
+  <div class="popup-content" id="popup-viz-content"></div>
+</div>
+<script>
+  // --- File Manager ---
+  function popupFileman() {
+    let html = `<b>File System</b>
+      <div id="fm-tree" style="background:#171c13;padding:10px 6px 8px 16px;border-radius:6px;min-height:90px;max-height:190px;overflow-y:auto;font-size:1em;color:#0f0;"></div>
+      <div id="fm-actions" style="margin-top:0.9em;">
+        <button onclick="fmNewFile()">New File</button>
+        <button onclick="fmNewFolder()">New Folder</button>
+        <button onclick="fmDelete()">Delete</button>
+        <button onclick="fmMove()">Move</button>
+        <button onclick="fmCopy()">Copy</button>
+        <button onclick="fmRefresh()">Refresh</button>
+      </div>
+      <div id="fm-status" style="margin-top:0.7em;color:#888;"></div>
+    `;
+    document.getElementById('popup-fileman-content').innerHTML = html;
+    showPopup('popup-fileman');
+    fmRender();
+  }
+  let fmSelected = null;
+  function fmRender() {
+    let walker = function(path, files, depth=0) {
+      let html = "";
+      files.forEach(f => {
+        let isDir = (fakeFiles[path+"/"+f] !== undefined);
+        html += `<div style="margin-left:${depth*18}px;cursor:pointer;" onclick="fmSelect('${path}','${f}')" ${fmSelected && fmSelected.path===path&&fmSelected.name===f?'style="background:#0a1c0a;"':''}>
+          <span style="color:${isDir?'#0ff':'#fff'};">${isDir?'[DIR]':'[FILE]'} </span>${f}
+        </div>`;
+        if (isDir) html += walker(path+"/"+f, fakeFiles[path+"/"+f], depth+1);
+      });
+      return html;
+    };
+    document.getElementById('fm-tree').innerHTML = walker("~", fakeFiles["~"]);
+  }
+  window.fmSelect = function(path, name) {
+    fmSelected = {path, name};
+    document.getElementById('fm-status').textContent = `Selected: ${name}`;
+  };
+  window.fmNewFile = function() {
+    let fname = prompt("File name?");
+    if (!fname) return;
+    let fullpath = fmSelected ? fmSelected.path+"/"+fname : "~/"+fname;
+    let dir = fmSelected ? fmSelected.path : "~";
+    if (!fakeFiles[dir]) fakeFiles[dir]=[];
+    fakeFiles[dir].push(fname);
+    fakeFileContents[fname] = "// new file";
+    fmRender();
+    document.getElementById('fm-status').textContent = `Created file: ${fname}`;
+  };
+  window.fmNewFolder = function() {
+    let fname = prompt("Folder name?");
+    if (!fname) return;
+    let dir = fmSelected ? fmSelected.path : "~";
+    let fullpath = dir+"/"+fname;
+    fakeFiles[fullpath] = [];
+    fakeFiles[dir].push(fname);
+    fmRender();
+    document.getElementById('fm-status').textContent = `Created folder: ${fname}`;
+  };
+  window.fmDelete = function() {
+    if (!fmSelected) { document.getElementById('fm-status').textContent="No file/folder selected"; return; }
+    let dir = fmSelected.path;
+    let idx = fakeFiles[dir].indexOf(fmSelected.name);
+    if (idx>-1) fakeFiles[dir].splice(idx,1);
+    let fullpath = dir+"/"+fmSelected.name;
+    delete fakeFiles[fullpath];
+    delete fakeFileContents[fmSelected.name];
+    fmSelected = null;
+    fmRender();
+    document.getElementById('fm-status').textContent = `Deleted.`;
+  };
+  window.fmMove = function() {
+    let dest = prompt("Move to folder (full path, e.g. ~/projects)?");
+    if (!fmSelected || !dest || !fakeFiles[dest]) { document.getElementById('fm-status').textContent="Invalid move"; return; }
+    let dir = fmSelected.path;
+    let idx = fakeFiles[dir].indexOf(fmSelected.name);
+    if (idx>-1) fakeFiles[dir].splice(idx,1);
+    fakeFiles[dest].push(fmSelected.name);
+    fmSelected = null;
+    fmRender();
+    document.getElementById('fm-status').textContent = `Moved.`;
+  };
+  window.fmCopy = function() {
+    if (!fmSelected) { document.getElementById('fm-status').textContent="No file/folder selected"; return; }
+    let dir = fmSelected.path;
+    let idx = fakeFiles[dir].indexOf(fmSelected.name);
+    let dest = prompt("Copy to folder (full path, e.g. ~/projects)?");
+    if (!dest || !fakeFiles[dest]) { document.getElementById('fm-status').textContent="Invalid copy"; return; }
+    let name = fmSelected.name;
+    fakeFiles[dest].push(name+"_copy");
+    fakeFileContents[name+"_copy"] = fakeFileContents[name] || "";
+    fmRender();
+    document.getElementById('fm-status').textContent = `Copied.`;
+  };
+  window.fmRefresh = function() { fmRender(); document.getElementById('fm-status').textContent = "Refreshed."; };
+  // --- BBS Dialer ---
+  function popupBbs() {
+    let boards = [
+      {name:"CyberCom",desc:"The Netrunner's Hideout"},
+      {name:"NeonGrid",desc:"Underground synth chat"},
+      {name:"HexNet",desc:"Warez & Exploits"},
+      {name:"The Blackwall",desc:"Redacted. Secure. Dangerous."}
+    ];
+    let pick = boards[Math.floor(Math.random()*boards.length)];
+    let ansi = `
+      <pre style="color:#0f0;font-family:monospace;font-size:1.1em;">
+ ______  ______  ______  ______
+|      ||      ||      ||      |
+| CYBR || NEON || HEX  || BLKW |
+|______||______||______||______|
+    </pre>
+    <b>Dialing: ${pick.name}</b><br>
+    <div id="bbs-status" style="color:#0ff;margin:0.6em 0;">Connecting...</div>
+    <audio id="bbs-audio" src="https://cdn.jsdelivr.net/gh/roket2980/hacker-assets@main/modem.mp3" preload="auto"></audio>
+    <div id="bbs-desc" style="color:#aaa;"></div>
+    `;
+    document.getElementById('popup-bbs-content').innerHTML = ansi;
+    showPopup('popup-bbs');
+    document.getElementById('bbs-audio').play();
+    setTimeout(()=>{
+      document.getElementById('bbs-status').textContent = "Connected!";
+      document.getElementById('bbs-desc').textContent = pick.desc;
+    }, 3500);
+  }
+  // --- Trace Tracker Game ---
+  function popupTrace() {
+    let html = `<b>Trace Tracker</b>
+    <div style="margin:1em 0;"><progress id="trace-bar" value="0" max="100" style="width:220px;height:16px;"></progress></div>
+    <div id="trace-instr" style="color:#0ff;">Mash <b>ESC</b> or <b>SPACE</b> to scramble your trace!</div>
+    <div id="trace-log" style="margin-top:0.7em;color:#888;"></div>
+    `;
+    document.getElementById('popup-trace-content').innerHTML = html;
+    showPopup('popup-trace');
+    let val = 0, timer = null, mashes = 0, alive = true;
+    function tick() {
+      if (!alive) return;
+      val += 1 + Math.random()*1.5;
+      if (val >= 100) {
+        alive = false;
+        document.getElementById('trace-log').innerHTML = "<span class='log-error'>You got traced! Disconnect and try again.</span>";
+        return;
+      }
+      document.getElementById('trace-bar').value = val;
+      timer = setTimeout(tick, 80);
+    }
+    tick();
+    window.addEventListener('keydown', scrambleTrace);
+    function scrambleTrace(e) {
+      if (!alive) return;
+      if (e.key === "Escape" || e.key === " " || e.code === "Space") {
+        val = Math.max(0, val-12-Math.random()*8);
+        mashes++;
+        document.getElementById('trace-log').textContent = `Trace scrambled: ${mashes}x`;
+        document.getElementById('trace-bar').value = val;
+      }
+    }
+    document.getElementById('popup-trace').onclose = () => { alive=false; window.removeEventListener('keydown', scrambleTrace); };
+  }
+  // --- Audio Visualizer ---
+  function popupViz() {
+    let html = `
+      <b>Audio Visualizer</b>
+      <canvas id="viz-canvas" width="260" height="80" style="background:#000;margin-top:1em;border-radius:7px;"></canvas>
+      <button onclick="vizFake()">Play Synth</button>
+      <button onclick="vizMic()">Mic Input</button>
+      <div id="viz-status" style="color:#888;margin-top:0.7em;"></div>
+    `;
+    document.getElementById('popup-viz-content').innerHTML = html;
+    showPopup('popup-viz');
+    let ctx = document.getElementById('viz-canvas').getContext('2d');
+    function draw(arr) {
+      ctx.clearRect(0,0,260,80);
+      ctx.beginPath();
+      ctx.moveTo(0,40);
+      arr.forEach((v,i)=>ctx.lineTo(i*6,40-v));
+      ctx.strokeStyle="#00ff33"; ctx.lineWidth=2; ctx.stroke();
+    }
+    window.vizFake = function() {
+      let arr = Array(44).fill(0);
+      let t=0;
+      let intv = setInterval(()=>{
+        for(let i=0;i<arr.length;i++) arr[i]=Math.sin((t+i)/3)*25+Math.random()*8;
+        draw(arr);
+        t++;
+        if (t>99) clearInterval(intv);
+      },18);
+      document.getElementById('viz-status').textContent = "Playing synthwave signal.";
+    };
+    window.vizMic = function() {
+      if (!navigator.mediaDevices) { document.getElementById('viz-status').textContent="No mic supported."; return; }
+      navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
+        let audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+        let src = audioCtx.createMediaStreamSource(stream);
+        let analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 64;
+        src.connect(analyser);
+        let data = new Uint8Array(analyser.frequencyBinCount);
+        function loop() {
+          analyser.getByteFrequencyData(data);
+          let arr = Array.from(data).map(x=>x/3-10);
+          draw(arr);
+          requestAnimationFrame(loop);
+        }
+        loop();
+        document.getElementById('viz-status').textContent = "Mic visualizing. Say something!";
+      }).catch(()=>{ document.getElementById('viz-status').textContent="Mic access denied."; });
+    };
+  }
+  // --- Register new commands ---
+  commandMap['fileman'] = popupFileman;
+  commandMap['bbs'] = popupBbs;
+  commandMap['trace'] = popupTrace;
+  commandMap['viz'] = popupViz;
+  // --- Animated error popup (Easter egg) ---
+  function showErrorPopup(msg) {
+    let pop = document.createElement('div');
+    pop.className = "popup active";
+    pop.style.top = (60+Math.random()*200)+"px";
+    pop.style.left = (60+Math.random()*300)+"px";
+    pop.style.background = "#8a0000e8";
+    pop.style.color = "#fff";
+    pop.style.fontWeight = "bold";
+    pop.style.zIndex = 9001;
+    pop.innerHTML = `<div class="popup-header" style="color:#fff;">ERROR<span class="popup-close" onclick="this.parentNode.parentNode.remove()">&#10006;</span></div>
+      <div class="popup-content" style="font-size:1.09em;">${msg}</div>`;
+    document.body.appendChild(pop);
+    setTimeout(()=>pop.remove(), 2700);
+  }
+  // --- End of third chunk ---
+</script>
+  <!-- === Place this block after the previous chunks, just before </body> === -->
+<!-- Clock Popup -->
+<div class="popup" id="popup-clock">
+  <div class="popup-header">World Clock<span class="popup-close" onclick="closePopup('popup-clock')">&#10006;</span></div>
+  <div class="popup-content" id="popup-clock-content"></div>
+</div>
+<!-- Chatroom Popup -->
+<div class="popup" id="popup-chatroom">
+  <div class="popup-header">Netrunner Chat<span class="popup-close" onclick="closePopup('popup-chatroom')">&#10006;</span></div>
+  <div class="popup-content" id="popup-chatroom-content"></div>
+</div>
+<!-- Process Manager Popup -->
+<div class="popup" id="popup-psman">
+  <div class="popup-header">Process Manager<span class="popup-close" onclick="closePopup('popup-psman')">&#10006;</span></div>
+  <div class="popup-content" id="popup-psman-content"></div>
+</div>
+<!-- ASCII Art Generator Popup -->
+<div class="popup" id="popup-asciiart">
+  <div class="popup-header">ASCII Art Generator<span class="popup-close" onclick="closePopup('popup-asciiart')">&#10006;</span></div>
+  <div class="popup-content" id="popup-asciiart-content"></div>
+</div>
+<script>
+  // --- Clock Widget ---
+  function popupClock() {
+    let html = `
+      <b>World Clock</b><br>
+      <div id="clock-local" style="font-size:1.18em;color:#0f0;margin:0.7em 0 0.3em 0;"></div>
+      <div id="clock-utc" style="font-size:1.11em;color:#0ff;margin-bottom:0.6em;"></div>
+      <div id="clock-world" style="font-size:1.09em;color:#ff0;"></div>
+    `;
+    document.getElementById('popup-clock-content').innerHTML = html;
+    showPopup('popup-clock');
+    let worldZones = [
+      {name:"Night City",offset:-7},
+      {name:"Tokyo",offset:9},
+      {name:"London",offset:0},
+      {name:"Moscow",offset:3},
+      {name:"Sydney",offset:10},
+      {name:"New York",offset:-4},
+      {name:"Berlin",offset:2},
+      {name:"Johannesburg",offset:2}
+    ];
+    let idx = 0;
+    function updateClock() {
+      let now = new Date();
+      document.getElementById('clock-local').textContent = "Local: " + now.toLocaleTimeString();
+      document.getElementById('clock-utc').textContent = "UTC: " + now.toUTCString().slice(17,25);
+      let zone = worldZones[idx];
+      let z = new Date(now.getTime() + (zone.offset - now.getTimezoneOffset()/60)*3600000);
+      document.getElementById('clock-world').textContent = `${zone.name}: ${z.toTimeString().slice(0,5)} (UTC${zone.offset>=0?'+':''}${zone.offset})`;
+      idx = (idx+1)%worldZones.length;
+    }
+    updateClock();
+    let intv = setInterval(updateClock, 1500);
+    document.getElementById('popup-clock').onclose = () => clearInterval(intv);
+  }
+  // --- Chatroom Widget ---
+  function popupChatroom() {
+    let html = `
+      <b>Netrunner Public Chat</b>
+      <div id="chatroom-log" style="background:#151e17;margin:6px 0 7px 0;padding:7px 8px;height:85px;overflow-y:auto;border-radius:6px;box-shadow:0 0 6px #0f08;font-size:0.97em;"></div>
+      <form id="chatroom-form" autocomplete="off" style="display:flex;gap:0.3em;">
+        <input type="text" id="chatroom-input" style="flex:1;background:#000;color:#0f0;font-size:1em;border:none;border-bottom:1px solid #0f0;outline:none;">
+        <button type="submit">Send</button>
+      </form>
+    `;
+    document.getElementById('popup-chatroom-content').innerHTML = html;
+    showPopup('popup-chatroom');
+    let log = document.getElementById('chatroom-log');
+    let users = ["zero", "cybercat", "hex", "luna", "ghost", "trace", "daemon", "byte"];
+    let active = ["digit"];
+    function joinLeave() {
+      if (Math.random()<0.58 && active.length<users.length) {
+        let u = users.filter(u=>!active.includes(u))[Math.floor(Math.random()*(users.length-active.length))];
+        active.push(u);
+        log.innerHTML += `<span style="color:#0ff;">${u} joined</span><br>`;
+      } else if (active.length>1) {
+        let u = active.splice(1,1)[0];
+        log.innerHTML += `<span style="color:#f66;">${u} left</span><br>`;
+      }
+      log.scrollTop = log.scrollHeight;
+    }
+    let chatLines = [
+      "Anyone got a zero-day for Arasaka ICE?",
+      "That last run was hot trash.",
+      "Ping me if you got creds to split.",
+      "Blackwall's up again. Who's in?",
+      "Digit, you there?",
+      "I just bricked my deck. Oops.",
+      "Trace on the grid, scramble now!",
+      "CYBRNET is open for recruits.",
+      "Fake IDs in /loot, check it.",
+      "Anyone up for a codejam tonight?"
+    ];
+    let chatInt = setInterval(()=>{
+      if (Math.random()<0.7) joinLeave();
+      let speaker = active[Math.floor(Math.random()*active.length)];
+      if (Math.random()<0.9) {
+        log.innerHTML += `<span style="color:#0f0;">${speaker}:</span> ${chatLines[Math.floor(Math.random()*chatLines.length)]}<br>`;
+        log.scrollTop = log.scrollHeight;
+      }
+    }, 2800);
+    document.getElementById('chatroom-form').onsubmit = function(e) {
+      e.preventDefault();
+      let msg = document.getElementById('chatroom-input').value.trim();
+      if (!msg) return;
+      log.innerHTML += `<span style="color:#0ff;">you:</span> ${msg}<br>`;
+      log.scrollTop = log.scrollHeight;
+      document.getElementById('chatroom-input').value = '';
+    };
+    document.getElementById('popup-chatroom').onclose = () => clearInterval(chatInt);
+  }
+  // --- Process Manager Widget ---
+  let psList = [
+    {pid:101, name:"digit", cpu:3, ram:4},
+    {pid:102, name:"netwatch", cpu:11, ram:1},
+    {pid:103, name:"icebreaker", cpu:19, ram:7},
+    {pid:104, name:"synthviz", cpu:2, ram:3}
+  ];
+  function popupPsman() {
+    let html = `
+      <b>Process Manager</b>
+      <table style="width:96%;margin:0.8em 0 0.8em 0;background:#161d12;color:#0f0;font-size:1em;border-radius:6px;">
+        <thead><tr><th style="color:#0ff;">PID</th><th>Name</th><th>CPU%</th><th>RAM%</th><th>Kill</th></tr></thead>
+        <tbody id="psman-tb"></tbody>
+      </table>
+      <div id="psman-status" style="color:#888;"></div>
+    `;
+    document.getElementById('popup-psman-content').innerHTML = html;
+    showPopup('popup-psman');
+    psmanRender();
+  }
+  function psmanRender() {
+    let tb = document.getElementById('psman-tb');
+    if (!tb) return;
+    tb.innerHTML = "";
+    psList.forEach(proc => {
+      tb.innerHTML += `<tr>
+        <td>${proc.pid}</td>
+        <td>${proc.name}</td>
+        <td>${proc.cpu}</td>
+        <td>${proc.ram}</td>
+        <td><button onclick="psmanKill(${proc.pid})" style="background:#900;color:#fff;width:40px;border-radius:3px;">KILL</button></td>
+      </tr>`;
+    });
+  }
+  window.psmanKill = function(pid) {
+    let idx = psList.findIndex(p=>p.pid===pid);
+    if (idx>-1) {
+      let proc = psList[idx];
+      psList.splice(idx,1);
+      psmanRender();
+      document.getElementById('psman-status').innerHTML = `Killed process ${proc.name} (${pid})`;
+    }
+  };
+  // --- ASCII Art Generator ---
+  function popupAsciiart() {
+    let html = `
+      <b>ASCII Art Generator</b><br>
+      <form id="aaform" autocomplete="off" style="margin:0.6em 0;">
+        <input type="text" id="aainput" maxlength="22" style="font-size:1.13em;background:#000;color:#0f0;border:none;border-bottom:1px solid #0f0;width:160px;outline:none;">
+        <button type="submit">Render</button>
+      </form>
+      <pre id="aaoutput" style="color:#00ff33;text-shadow:0 0 8px #00ff33b9;font-size:1em;margin-top:1em;"></pre>
+    `;
+    document.getElementById('popup-asciiart-content').innerHTML = html;
+    showPopup('popup-asciiart');
+    document.getElementById('aaform').onsubmit = function(e) {
+      e.preventDefault();
+      let txt = document.getElementById('aainput').value;
+      document.getElementById('aaoutput').textContent = genAscii(txt);
+    };
+  }
+  function genAscii(txt) {
+    if (!txt) return "";
+    let out = "";
+    for (let c of txt.toUpperCase()) {
+      out += String.fromCharCode(9608).repeat(2) + c + String.fromCharCode(9608).repeat(2) + "\n";
+    }
+    return out;
+  }
+  // --- System Notice Banner ---
+  let noticeActive = false;
+  function showNotice(msg, color="#0ff") {
+    if (noticeActive) return;
+    noticeActive = true;
+    let bar = document.createElement('div');
+    bar.style.position = "fixed";
+    bar.style.top = "0"; bar.style.left = "0";
+    bar.style.width = "100vw"; bar.style.zIndex = 9002;
+    bar.style.background = "#171d0f";
+    bar.style.color = color;
+    bar.style.fontSize = "1.12em";
+    bar.style.fontWeight = "bold";
+    bar.style.textAlign = "center";
+    bar.style.padding = "7px 0";
+    bar.style.boxShadow = "0 1px 10px "+color;
+    bar.style.letterSpacing = "0.06em";
+    bar.textContent = msg;
+    document.body.appendChild(bar);
+    setTimeout(()=>{ bar.remove(); noticeActive=false; }, 3200);
+  }
+  // --- Glitch Mode (hidden) ---
+  let glitchActive = false;
+  function glitchCmd() {
+    if (glitchActive) return;
+    glitchActive = true;
+    let term = document.getElementById('main-term');
+    let orig = term.style.filter;
+    let t = 0;
+    let intv = setInterval(()=>{
+      term.style.filter = "contrast("+(1+Math.random()*2.5)+") blur("+(Math.random()*1.6)+"px) hue-rotate("+(Math.random()*360)+"deg)";
+      t++;
+      if (t>30) {
+        clearInterval(intv);
+        term.style.filter = orig;
+        glitchActive = false;
+      }
+    }, 80);
+    showNotice("!! SYSTEM GLITCH DETECTED !!","#f0f");
+  }
+  // --- Register new commands ---
+  commandMap['clock'] = popupClock;
+  commandMap['chatroom'] = popupChatroom;
+  commandMap['psman'] = popupPsman;
+  commandMap['asciiart'] = popupAsciiart;
+  commandMap['glitch'] = glitchCmd;
+  // --- End of fourth chunk ---
+</script>
+  <!-- === Place this block after the previous chunks, just before </body> === -->
+<!-- Achievements Popup -->
+<div class="popup" id="popup-achieve">
+  <div class="popup-header">Achievements<span class="popup-close" onclick="closePopup('popup-achieve')">&#10006;</span></div>
+  <div class="popup-content" id="popup-achieve-content"></div>
+</div>
+<!-- Theme Switcher Popup -->
+<div class="popup" id="popup-theme">
+  <div class="popup-header">Theme Switcher<span class="popup-close" onclick="closePopup('popup-theme')">&#10006;</span></div>
+  <div class="popup-content" id="popup-theme-content"></div>
+</div>
+<!-- Banner Editor Popup -->
+<div class="popup" id="popup-banneredit">
+  <div class="popup-header">Startup Banner Editor<span class="popup-close" onclick="closePopup('popup-banneredit')">&#10006;</span></div>
+  <div class="popup-content" id="popup-banneredit-content"></div>
+</div>
+<!-- Command Palette Overlay -->
+<div id="palette-overlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9800;background:rgba(7,16,8,0.84);align-items:center;justify-content:center;">
+  <div style="margin:auto;background:#101c11;color:#0ff;border-radius:10px;padding:2em 2.5em;box-shadow:0 0 24px #00ffd0;">
+    <input id="palette-input" style="font-size:1.3em;width:320px;background:#000;color:#0ff;border:none;border-bottom:2px solid #0ff;outline:none;margin-bottom:0.7em;" autocomplete="off" placeholder="Type a command..."/>
+    <div id="palette-suggestions" style="font-size:1em;color:#70ffb3;"></div>
+  </div>
+</div>
+<script>
+  // --- Achievements & Badges ---
+  let achievements = JSON.parse(localStorage.getItem("digit_achieve")||"{}");
+  function awardAchieve(key, name, desc, emoji="🏆") {
+    if (achievements[key]) return;
+    achievements[key] = {name, desc, emoji, date: new Date().toLocaleString()};
+    localStorage.setItem("digit_achieve", JSON.stringify(achievements));
+    showNotice(`Achievement Unlocked: ${name} ${emoji}`,"#fd0");
+    showBadgePopup(name, desc, emoji);
+  }
+  function popupAchieve() {
+    let html = `<b>Achievements</b><br>`;
+    let keys = Object.keys(achievements);
+    if (!keys.length) html += "No badges yet. Hack more!";
+    else keys.forEach(k=>{
+      let a=achievements[k];
+      html += `<div style="margin:0.5em 0;font-size:1.1em;"><span style="font-size:1.5em;">${a.emoji}</span> <b>${a.name}</b><br>
+      <span style="color:#bbb;">${a.desc}</span><br>
+      <span style="font-size:0.8em;color:#0ff;">${a.date}</span></div>`;
+    });
+    document.getElementById('popup-achieve-content').innerHTML = html;
+    showPopup('popup-achieve');
+  }
+  function showBadgePopup(name, desc, emoji) {
+    let pop = document.createElement('div');
+    pop.style.position = "fixed";
+    pop.style.top = "18px";
+    pop.style.right = "28px";
+    pop.style.background = "#161d12";
+    pop.style.border = "2px solid #0ff";
+    pop.style.color = "#fff";
+    pop.style.borderRadius = "11px";
+    pop.style.boxShadow = "0 0 18px #00ffd0";
+    pop.style.zIndex = 9801;
+    pop.style.padding = "1em 2em";
+    pop.style.fontSize = "1.16em";
+    pop.style.fontWeight = "bold";
+    pop.style.display = "flex";
+    pop.style.alignItems = "center";
+    pop.innerHTML = `<span style="font-size:2.4em;margin-right:0.7em;">${emoji}</span>
+    <div>
+      <div>${name}</div>
+      <div style="font-size:0.93em;color:#0ff;">${desc}</div>
+    </div>`;
+    document.body.appendChild(pop);
+    setTimeout(()=>pop.remove(), 3300);
+  }
+  // Example: Award on secret command
+  let oldSecretCmd = commandMap['secret'];
+  commandMap['secret'] = function() {
+    oldSecretCmd();
+    awardAchieve("blackwall","Blackwall Key","Discovered the secret netrunner passphrase.","🕶️");
+  };
+  // --- Theme Switcher ---
+  let themes = {
+    "crt": {name:"Classic CRT", bg:"#070b06", text:"#00ff33", accent:"#00ffd0", error:"#ff2e2e"},
+    "amber": {name:"Amber Terminal", bg:"#1e1706", text:"#ffc800", accent:"#ffe38a", error:"#ffbc00"},
+    "blueice": {name:"Blue ICE", bg:"#071a33", text:"#00bfff", accent:"#70aaff", error:"#ff2e2e"},
+    "matrix": {name:"Matrix", bg:"#000", text:"#00ff41", accent:"#0ff", error:"#4affff"},
+    "custom": {name:"Custom", bg:"#140c1a", text:"#f0f", accent:"#0ff", error:"#f0f"}
+  };
+  let themeKey = localStorage.getItem("digit_theme")||"crt";
+  function applyTheme(key) {
+    let t = themes[key]||themes["crt"];
+    document.documentElement.style.setProperty('--bg', t.bg);
+    document.documentElement.style.setProperty('--text', t.text);
+    document.documentElement.style.setProperty('--accent', t.accent);
+    document.documentElement.style.setProperty('--error', t.error);
+    localStorage.setItem("digit_theme", key);
+    themeKey = key;
+    showNotice("Theme: "+t.name, t.accent);
+  }
+  function popupTheme() {
+    let html = `<b>Choose a Theme</b><br>`;
+    Object.keys(themes).forEach(k=>{
+      let t=themes[k];
+      html += `<button onclick="applyTheme('${k}')" style="background:${t.bg};color:${t.text};margin:0.5em 0.3em;border:1.5px solid ${t.accent};border-radius:7px;padding:0.7em 1.2em;">${t.name}</button>`;
+    });
+    document.getElementById('popup-theme-content').innerHTML = html;
+    showPopup('popup-theme');
+  }
+  applyTheme(themeKey);
+  // --- Banner Editor ---
+  function popupBanneredit() {
+    let curr = localStorage.getItem("digit_banner")||document.getElementById("ascii-art").textContent;
+    let currmsg = localStorage.getItem("digit_banner_msg")||"[BOOT] DigitOS v4.2.6 (c)2077 Blackwall Softworks";
+    let html = `
+      <b>Edit Startup ASCII Art & Boot Message</b>
+      <textarea id="banner-ta" style="width:99%;height:80px;background:#110;color:#0f0;font-family:inherit;font-size:1em;border:1px solid #0f0;border-radius:5px;padding:5px 8px;box-shadow:0 0 8px #0f08;">${curr}</textarea>
+      <input id="banner-msg" style="width:99%;margin-top:0.5em;background:#111;color:#ffc800;font-size:1em;border:1px solid #ffc800;" value="${currmsg}">
+      <button onclick="saveBanner()">Save</button>
+      <div id="banneredit-status" style="margin-top:0.5em;color:#777;"></div>
+    `;
+    document.getElementById('popup-banneredit-content').innerHTML = html;
+    showPopup('popup-banneredit');
+    window.saveBanner = function() {
+      let art = document.getElementById('banner-ta').value;
+      let msg = document.getElementById('banner-msg').value;
+      localStorage.setItem("digit_banner", art);
+      localStorage.setItem("digit_banner_msg", msg);
+      document.getElementById('ascii-art').textContent = art;
+      document.getElementById('banneredit-status').innerHTML = `<span class="log-success">Saved! Restart to see changes.</span>`;
+    };
+  }
+  // On boot, update banner from storage
+  window.addEventListener('load',()=>{
+    let art = localStorage.getItem("digit_banner");
+    if (art) document.getElementById("ascii-art").textContent = art;
+    let msg = localStorage.getItem("digit_banner_msg");
+    if (msg) {
+      document.getElementById("boot-sequence").children[0].textContent = msg;
+    }
+  });
+  // --- Command Palette/Quick Jump ---
+  function popupPalette() {
+    let overlay = document.getElementById('palette-overlay');
+    overlay.style.display = 'flex';
+    let input = document.getElementById('palette-input');
+    let sugg = document.getElementById('palette-suggestions');
+    input.value = '';
+    input.focus();
+    let cmds = Object.keys(commandMap);
+    input.oninput = function() {
+      let q = input.value.trim().toLowerCase();
+      sugg.innerHTML = cmds.filter(c=>c.startsWith(q)).slice(0,8).join(', ');
+    };
+    input.onkeydown = function(e) {
+      if (e.key==='Enter') {
+        let q = input.value.trim();
+        if (commandMap[q]) {
+          overlay.style.display='none';
+          commandMap[q]([]);
+        } else {
+          sugg.innerHTML = "Unknown command";
+        }
+      } else if (e.key==='Escape') {
+        overlay.style.display='none';
+      }
+    };
+  }
+  // --- Reset Preferences ---
+  function resetSettings() {
+    localStorage.removeItem("digit_theme");
+    localStorage.removeItem("digit_achieve");
+    localStorage.removeItem("digit_banner");
+    localStorage.removeItem("digit_banner_msg");
+    location.reload();
+  }
+  // --- Register more commands ---
+  commandMap['achieve'] = popupAchieve;
+  commandMap['theme'] = popupTheme;
+  commandMap['banneredit'] = popupBanneredit;
+  commandMap['palette'] = popupPalette;
+  commandMap['resetsettings'] = resetSettings;
+  // Keyboard: Ctrl+K or Cmd+K opens palette
+  window.addEventListener('keydown', function(e){
+    if ((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k') {
+      popupPalette();
+    }
+  });
+  // Example: Award achievements for trying features
+  let oldHack = commandMap['hack'], oldMatrix = commandMap['matrix'];
+  commandMap['hack'] = function() { oldHack(); awardAchieve("firsthack","First Hack!","You ran your first simulated hack.","💾"); };
+  commandMap['matrix'] = function(){ oldMatrix(); awardAchieve("matrixrain","Matrix Rain","You summoned the matrix.","🌧️"); };
+  // --- End of fifth chunk ---
+</script>
+  <!-- === Place this block after the previous chunks, just before </body> === -->
+<!-- Missions Popup -->
+<div class="popup" id="popup-missions">
+  <div class="popup-header">Mission Log<span class="popup-close" onclick="closePopup('popup-missions')">&#10006;</span></div>
+  <div class="popup-content" id="popup-missions-content"></div>
+</div>
+<!-- Notes Popup -->
+<div class="popup" id="popup-notes">
+  <div class="popup-header">Notes<span class="popup-close" onclick="closePopup('popup-notes')">&#10006;</span></div>
+  <div class="popup-content" id="popup-notes-content"></div>
+</div>
+<!-- Weather Popup -->
+<div class="popup" id="popup-weather">
+  <div class="popup-header">Weather<span class="popup-close" onclick="closePopup('popup-weather')">&#10006;</span></div>
+  <div class="popup-content" id="popup-weather-content"></div>
+</div>
+<!-- Handle Generator Popup -->
+<div class="popup" id="popup-handlegen">
+  <div class="popup-header">Handle Generator<span class="popup-close" onclick="closePopup('popup-handlegen')">&#10006;</span></div>
+  <div class="popup-content" id="popup-handlegen-content"></div>
+</div>
+<script>
+  // --- Missions (Quest Log) ---
+  let missions = JSON.parse(localStorage.getItem("digit_missions")||"[]");
+  function popupMissions() {
+    let html = `<b>Current Runs</b>
+    <ul id="missions-list" style="padding-left:1.2em;color:#0f0;"></ul>
+    <form id="mission-add-form" style="margin-top:0.4em;display:flex;gap:0.5em;">
+      <input id="mission-input" autocomplete="off" style="flex:1;background:#000;color:#0f0;font-size:1em;border:none;border-bottom:1px solid #0f0;outline:none;" placeholder="New mission...">
+      <button type="submit">Add</button>
+    </form>
+    <div id="missions-status" style="margin-top:0.5em;color:#888;"></div>`;
+    document.getElementById('popup-missions-content').innerHTML = html;
+    showPopup('popup-missions');
+    renderMissions();
+    document.getElementById('mission-add-form').onsubmit = function(e){
+      e.preventDefault();
+      let val = document.getElementById('mission-input').value.trim();
+      if(val) {
+        missions.push({task:val,done:false});
+        localStorage.setItem("digit_missions",JSON.stringify(missions));
+        renderMissions();
+        document.getElementById('mission-input').value="";
+      }
+    };
+  }
+  function renderMissions() {
+    let ul = document.getElementById('missions-list');
+    if (!ul) return;
+    ul.innerHTML = "";
+    missions.forEach((m,i)=>{
+      ul.innerHTML += `<li>
+        <span style="cursor:pointer;${m.done?'text-decoration:line-through;color:#0ff;':''}" onclick="toggleMission(${i})">${m.task}</span>
+        <button onclick="delMission(${i})" style="margin-left:0.6em;font-size:0.8em;background:#900;color:#fff;border-radius:3px;">Del</button>
+      </li>`;
+    });
+  }
+  window.toggleMission = function(i) {
+    missions[i].done = !missions[i].done;
+    localStorage.setItem("digit_missions",JSON.stringify(missions));
+    renderMissions();
+    if(missions[i].done) showNotice("Mission Complete: "+missions[i].task,"#fd0");
+  };
+  window.delMission = function(i) {
+    missions.splice(i,1);
+    localStorage.setItem("digit_missions",JSON.stringify(missions));
+    renderMissions();
+  };
+  // --- Notes ---
+  function popupNotes() {
+    let notes = localStorage.getItem("digit_notes")||"";
+    let html = `<b>Sticky Notes</b>
+    <textarea id="notes-ta" style="width:99%;height:110px;background:#110;color:#0f0;font-family:inherit;font-size:1em;border:1px solid #0f0;border-radius:5px;padding:5px 8px;box-shadow:0 0 8px #0f08;">${notes}</textarea>
+    <div id="notes-status" style="margin-top:0.5em;color:#888;">Auto-saved to deck</div>`;
+    document.getElementById('popup-notes-content').innerHTML = html;
+    showPopup('popup-notes');
+    let ta = document.getElementById('notes-ta');
+    ta.oninput = function() {
+      localStorage.setItem("digit_notes",ta.value);
+      document.getElementById('notes-status').textContent = "Saved.";
+    };
+  }
+  // --- Weather Widget ---
+  function popupWeather() {
+    let html = `<b>Weather Report</b>
+    <form id="weather-form" style="margin:0.7em 0;">
+      <input id="weather-city" autocomplete="off" style="background:#000;color:#0f0;font-size:1em;border:none;border-bottom:1px solid #0f0;outline:none;width:120px;" value="Night City"/>
+      <button type="submit">Check</button>
+    </form>
+    <div id="weather-result" style="margin-top:0.8em;font-size:1.1em;"></div>`;
+    document.getElementById('popup-weather-content').innerHTML = html;
+    showPopup('popup-weather');
+    document.getElementById('weather-form').onsubmit = async function(e){
+      e.preventDefault();
+      let city = document.getElementById('weather-city').value.trim()||"Night City";
+      let wHtml = await getWeather(city);
+      document.getElementById('weather-result').innerHTML = wHtml;
+    };
+    // Show default
+    getWeather("Night City").then(wHtml=>{
+      document.getElementById('weather-result').innerHTML = wHtml;
+    });
+  }
+  async function getWeather(city) {
+    try {
+      // Real API disabled for privacy, so fake deep-cyber weather
+      let fake = [
+        {desc:"Smoggy w/ acid rain",temp:19,icon:"🌧️"},
+        {desc:"Clear neon sky",temp:28,icon:"🌃"},
+        {desc:"Heavy fog, low vis",temp:14,icon:"🌫️"},
+        {desc:"Thunderstorm",temp:21,icon:"⛈️"},
+        {desc:"Night drizzle",temp:18,icon:"🌦️"},
+        {desc:"Dusty wind",temp:26,icon:"🌬️"},
+        {desc:"Glitch storm",temp:0,icon:"⚡"},
+        {desc:"Chill & quiet",temp:12,icon:"🌙"}
+      ];
+      let w = fake[Math.floor(Math.random()*fake.length)];
+      return `<span style="font-size:2em;">${w.icon}</span> <b>${city}</b><br>
+        <span style="color:#0ff;font-size:1.09em;">${w.desc}, ${w.temp}&deg;C</span>`;
+    } catch(e) {
+      return "<span class='log-error'>Weather service offline</span>";
+    }
+  }
+  // --- Handle Generator ---
+  function popupHandlegen() {
+    let handles = [];
+    let html = `<b>Random Netrunner Handles</b>
+    <div id="handle-list" style="margin:1.1em 0;font-size:1.2em;color:#0f0;"></div>
+    <button onclick="genHandles()">Generate</button>
+    `;
+    document.getElementById('popup-handlegen-content').innerHTML = html;
+    showPopup('popup-handlegen');
+    genHandles();
+  }
+  function genHandles() {
+    let pre = ["cyber","ghost","zero","hex","syn","byte","trace","luna","ice","glitch","nova","flux","neon","rogue","null","crypt"];
+    let suf = ["runner","cat","blade","daemon","fox","knight","jackal","core","haze","witch","vex","rat","phage","crow","spark"];
+    let num = ["77","404","001","x","13","99","0xA","7h","09","_exe"];
+    let out = "";
+    for(let i=0;i<7;i++){
+      let h = pre[Math.floor(Math.random()*pre.length)]
+        + (Math.random()<0.3?num[Math.floor(Math.random()*num.length)]:"")
+        + suf[Math.floor(Math.random()*suf.length)];
+      out += h+"<br>";
+    }
+    document.getElementById('handle-list').innerHTML = out;
+  }
+  // --- Register new commands ---
+  commandMap['missions'] = popupMissions;
+  commandMap['notes'] = popupNotes;
+  commandMap['weather'] = popupWeather;
+  commandMap['handlegen'] = popupHandlegen;
+  // --- End of sixth chunk ---
+</script>
+  <!-- === Place this block after the previous chunks, just before </body> === -->
+<!-- News Popup -->
+<div class="popup" id="popup-news">
+  <div class="popup-header">Cyber News<span class="popup-close" onclick="closePopup('popup-news')">&#10006;</span></div>
+  <div class="popup-content" id="popup-news-content"></div>
+</div>
+<!-- Backup/Restore Popup -->
+<div class="popup" id="popup-backup">
+  <div class="popup-header">Backup/Restore<span class="popup-close" onclick="closePopup('popup-backup')">&#10006;</span></div>
+  <div class="popup-content" id="popup-backup-content"></div>
+</div>
+<!-- Image Viewer Popup -->
+<div class="popup" id="popup-imgview">
+  <div class="popup-header">Image Viewer<span class="popup-close" onclick="closePopup('popup-imgview')">&#10006;</span></div>
+  <div class="popup-content" id="popup-imgview-content"></div>
+</div>
+<!-- Calendar Popup -->
+<div class="popup" id="popup-calendar">
+  <div class="popup-header">Agenda/Calendar<span class="popup-close" onclick="closePopup('popup-calendar')">&#10006;</span></div>
+  <div class="popup-content" id="popup-calendar-content"></div>
+</div>
+<script>
+  // --- News Reader ---
+  let cyberNews = [
+    {title:"Arasaka ICE Breached in Night City", desc:"Anonymous netrunner collective claims responsibility for data leak.", time:"15m ago"},
+    {title:"Quantum Decks Now Illegal", desc:"Corpo bill bans unlicensed neural hardware.", time:"1h ago"},
+    {title:"Blackwall Flickers—Ghost Traffic Doubled", desc:"Netwatch warns of rising rogue AI activity.", time:"2h ago"},
+    {title:"New Synthwave Bar Opens in Japantown", desc:"Now serving neon cocktails and free WiFi.", time:"3h ago"},
+    {title:"Zero-Day Sold for 100k E$", desc:"Underground forum erupts over rare exploit auction.", time:"4h ago"}
+  ];
+  function popupNews() {
+    let html = `<b>Cyber News Feeds</b>
+    <ul style="color:#0f0;padding-left:1.1em;">`;
+    cyberNews.forEach(n=>{
+      html += `<li style="margin-bottom:0.5em;"><b>${n.title}</b><br>
+        <span style="color:#70ffb3;">${n.desc}</span> <span style="color:#aaa;font-size:0.93em;">(${n.time})</span>
+      </li>`;
+    });
+    html += `</ul>
+    <button onclick="showBreaking()">Show Breaking News</button>`;
+    document.getElementById('popup-news-content').innerHTML = html;
+    showPopup('popup-news');
+  }
+  function showBreaking() {
+    showNotice("BREAKING: Blackwall breach confirmed. Stay frosty, choom.","#f00");
+  }
+  // --- Backup/Restore ---
+  function popupBackup() {
+    let html = `<b>Backup & Restore Terminal State</b>
+    <button onclick="doBackup()">Download Backup</button>
+    <input type="file" id="restore-file" accept=".json" style="margin-left:1.1em;">
+    <button onclick="doRestore()">Restore</button>
+    <div id="backup-status" style="margin-top:0.7em;color:#888;"></div>`;
+    document.getElementById('popup-backup-content').innerHTML = html;
+    showPopup('popup-backup');
+  }
+  function doBackup() {
+    let data = {
+      missions, achievements, themeKey,
+      banner: localStorage.getItem("digit_banner"),
+      banner_msg: localStorage.getItem("digit_banner_msg"),
+      notes: localStorage.getItem("digit_notes")
+    };
+    let blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url; a.download = "digit_terminal_backup.json";
+    document.body.appendChild(a); a.click(); a.remove();
+    showNotice("Backup downloaded","#0ff");
+  }
+  function doRestore() {
+    let file = document.getElementById('restore-file').files[0];
+    if (!file) { showErrorPopup("No file selected"); return; }
+    let reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        let data = JSON.parse(e.target.result);
+        if (data.missions) localStorage.setItem("digit_missions",JSON.stringify(data.missions));
+        if (data.achievements) localStorage.setItem("digit_achieve",JSON.stringify(data.achievements));
+        if (data.themeKey) localStorage.setItem("digit_theme",data.themeKey);
+        if (data.banner) localStorage.setItem("digit_banner",data.banner);
+        if (data.banner_msg) localStorage.setItem("digit_banner_msg",data.banner_msg);
+        if (data.notes) localStorage.setItem("digit_notes",data.notes);
+        showNotice("Backup restored; reload for changes","#0f0");
+      } catch(e) {
+        showErrorPopup("Restore failed: "+e);
+      }
+    };
+    reader.readAsText(file);
+  }
+  // --- Image Viewer ---
+  function popupImgview() {
+    let html = `<b>Paste/Upload Image</b>
+    <input type="file" id="imgfile" accept="image/*">
+    <button onclick="asciiPreview()">ASCII Preview</button>
+    <div id="imgview-img" style="margin:0.8em 0;"></div>
+    <div id="imgview-status" style="color:#888;"></div>`;
+    document.getElementById('popup-imgview-content').innerHTML = html;
+    showPopup('popup-imgview');
+    // Listen for file or paste
+    let fileInp = document.getElementById('imgfile');
+    fileInp.onchange = function(){
+      let f = fileInp.files[0];
+      if (!f) return;
+      let reader = new FileReader();
+      reader.onload = function(e){
+        showImg(e.target.result);
+      };
+      reader.readAsDataURL(f);
+    };
+    document.getElementById('popup-imgview').onpaste = function(e){
+      let items = e.clipboardData.items;
+      for (let i=0;i<items.length;i++) {
+        if (items[i].type.indexOf("image")===0) {
+          let f = items[i].getAsFile();
+          let reader = new FileReader();
+          reader.onload = function(e){
+            showImg(e.target.result);
+          };
+          reader.readAsDataURL(f);
+        }
+      }
+    };
+  }
+  function showImg(url) {
+    document.getElementById('imgview-img').innerHTML = `<img src="${url}" style="max-width:220px;max-height:120px;border:2px solid #0ff;border-radius:7px;">`;
+    document.getElementById('imgview-status').textContent = "Image loaded.";
+  }
+  function asciiPreview() {
+    let img = document.querySelector('#imgview-img img');
+    if (!img) { showErrorPopup("No image loaded"); return; }
+    // Simple fake: just output "[ASCII ART PREVIEW]" for now (real would require canvas)
+    document.getElementById('imgview-img').innerHTML = "<pre style='color:#0ff;font-size:1.3em;'>[ASCII ART PREVIEW]</pre>";
+  }
+  // --- Calendar/Agenda ---
+  function popupCalendar() {
+    let html = `<b>Agenda & Calendar</b>
+    <table id="cal-table" style="margin:0.7em 0;background:#161d12;color:#0f0;font-size:1em;border-radius:6px;">
+      <thead><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr></thead>
+      <tbody id="cal-body"></tbody>
+    </table>
+    <div id="cal-status" style="color:#888;"></div>
+    `;
+    document.getElementById('popup-calendar-content').innerHTML = html;
+    showPopup('popup-calendar');
+    drawCalendar();
+  }
+  function drawCalendar() {
+    let now = new Date();
+    let y = now.getFullYear(), m = now.getMonth();
+    let d1 = new Date(y, m, 1).getDay();
+    let days = new Date(y, m+1, 0).getDate();
+    let tbody = document.getElementById('cal-body');
+    tbody.innerHTML = "";
+    let row = "<tr>";
+    for(let i=0;i<d1;i++) row+="<td></td>";
+    let missionsArr = missions.map(m=>m.task.substr(0,2)+Math.floor(Math.random()*28+1)); // Fake mission days
+    for(let d=1;d<=days;d++) {
+      if ((d+d1-1)%7===0 && d!==1) { row+="</tr><tr>"; }
+      let marked = missionsArr.includes(""+d);
+      row+=`<td style="background:${marked?'#0ff':'none'};color:${marked?'#222':'#0f0'};border-radius:4px;">${d}</td>`;
+    }
+    row+="</tr>";
+    tbody.innerHTML = row;
+    document.getElementById('cal-status').textContent = "Today: "+now.toDateString();
+  }
+  // --- Register new commands ---
+  commandMap['news'] = popupNews;
+  commandMap['backup'] = popupBackup;
+  commandMap['imgview'] = popupImgview;
+  commandMap['calendar'] = popupCalendar;
+  // --- End of seventh chunk ---
+</script>
+  <!-- === Place this block after the previous chunks, just before </body> === -->
+<!-- Hack Simulator Popup -->
+<div class="popup" id="popup-hacksim">
+  <div class="popup-header">Hack Simulator<span class="popup-close" onclick="closePopup('popup-hacksim')">&#10006;</span></div>
+  <div class="popup-content" id="popup-hacksim-content"></div>
+</div>
+<!-- QR Code Popup -->
+<div class="popup" id="popup-qr">
+  <div class="popup-header">QR Code<span class="popup-close" onclick="closePopup('popup-qr')">&#10006;</span></div>
+  <div class="popup-content" id="popup-qr-content"></div>
+</div>
+<!-- File Transfer Popup -->
+<div class="popup" id="popup-filexfer">
+  <div class="popup-header">File Transfer<span class="popup-close" onclick="closePopup('popup-filexfer')">&#10006;</span></div>
+  <div class="popup-content" id="popup-filexfer-content"></div>
+</div>
+<!-- Self-Destruct Popup -->
+<div class="popup" id="popup-selfdestruct">
+  <div class="popup-header">Self-Destruct<span class="popup-close" onclick="closePopup('popup-selfdestruct')">&#10006;</span></div>
+  <div class="popup-content" id="popup-selfdestruct-content"></div>
+</div>
+<script>
+  // --- Hack Simulator ---
+  function popupHacksim() {
+    let html = `<b>Hack Simulator</b>
+    <div id="hacksim-log" style="margin:0.7em 0;color:#0ff;">Initializing...</div>
+    <progress id="hacksim-bar" value="0" max="100" style="width:220px;height:17px;"></progress>
+    <div id="hacksim-status" style="margin-top:0.7em;color:#888;"></div>
+    `;
+    document.getElementById('popup-hacksim-content').innerHTML = html;
+    showPopup('popup-hacksim');
+    let val = 0, timer = null, events = [
+      "Firewall detected, rerouting...",
+      "ICE spike! Deploying countermeasures...",
+      "Sysop on patrol. Stay low.",
+      "Backdoor found. Injecting shell.",
+      "Quantum encryption... brute-forcing.",
+      "Bypass complete.",
+      "Data packet intercepted!",
+      "Loot located. Extracting...",
+      "Ping from Netwatch—move quick!"
+    ], loot = [
+      "Zero-day exploit",
+      "Encrypted credchip",
+      "Rare ICEbreaker module",
+      "Neural data dump",
+      "Arasaka backdoor",
+      "Ghost trace logs",
+      "Silent worm"
+    ];
+    function hackStep() {
+      val += 6 + Math.random()*8;
+      if (val>=100) {
+        document.getElementById('hacksim-bar').value = 100;
+        let found = loot[Math.floor(Math.random()*loot.length)];
+        document.getElementById('hacksim-log').innerHTML += `<br><span style="color:#0f0;">SUCCESS: Hack complete! Loot: ${found}</span>`;
+        awardAchieve("hacksim_"+found.replace(/\s/g,"_"), "HackSim: "+found, "Looted "+found+" in hack sim.", "💻");
+        return;
+      }
+      document.getElementById('hacksim-bar').value = val;
+      if (Math.random()<0.65) {
+        document.getElementById('hacksim-log').innerHTML += "<br>"+events[Math.floor(Math.random()*events.length)];
+      }
+      setTimeout(hackStep, 700+Math.random()*400);
+    }
+    document.getElementById('hacksim-log').textContent = "Target: secure mainframe... Launching intrusion.";
+    setTimeout(hackStep, 1000);
+  }
+  // --- QR Code Generator/Reader ---
+  function popupQr() {
+    let html = `<b>QR Code Generator</b>
+    <input id="qrinput" autocomplete="off" style="background:#000;color:#0f0;font-size:1em;border:none;border-bottom:1px solid #0f0;outline:none;width:180px;" placeholder="Text or URL">
+    <button onclick="genQr()">Generate</button>
+    <div id="qr-img" style="margin:1.2em 0;"></div>
+    <div id="qr-status" style="color:#888;"></div>
+    `;
+    document.getElementById('popup-qr-content').innerHTML = html;
+    showPopup('popup-qr');
+  }
+  function genQr() {
+    let val = document.getElementById('qrinput').value.trim();
+    if(!val) { showErrorPopup("Enter text!"); return; }
+    // Use quickchart.io for in-browser QR
+    let url = "https://quickchart.io/qr?text="+encodeURIComponent(val)+"&size=180";
+    document.getElementById('qr-img').innerHTML = `<img src="${url}" style="border:2px solid #0ff;border-radius:7px;">`;
+    document.getElementById('qr-status').textContent = "QR generated.";
+  }
+  // --- File Transfer ---
+  let filexferFiles = JSON.parse(localStorage.getItem("digit_filexfer")||"[]");
+  function popupFilexfer() {
+    let html = `<b>File Transfer</b>
+    <input type="file" id="filexfer-up" multiple>
+    <button onclick="filexferDownload()">Download Selected</button>
+    <div id="filexfer-list" style="margin:1em 0;"></div>
+    <div id="filexfer-status" style="color:#888;"></div>`;
+    document.getElementById('popup-filexfer-content').innerHTML = html;
+    showPopup('popup-filexfer');
+    let up = document.getElementById('filexfer-up');
+    up.onchange = function(){
+      for(let file of up.files){
+        let reader = new FileReader();
+        reader.onload = function(e){
+          filexferFiles.push({name:file.name, data:e.target.result});
+          localStorage.setItem("digit_filexfer",JSON.stringify(filexferFiles));
+          renderFilexfer();
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    renderFilexfer();
+  }
+  function renderFilexfer() {
+    let list = document.getElementById('filexfer-list');
+    if(!list) return;
+    list.innerHTML = "";
+    filexferFiles.forEach((f,i)=>{
+      list.innerHTML += `<label style="color:#0ff;"><input type="checkbox" value="${i}"> ${f.name}</label><br>`;
+    });
+  }
+  function filexferDownload() {
+    let checks = document.querySelectorAll('#filexfer-list input[type=checkbox]:checked');
+    if (!checks.length) { showErrorPopup("No file selected"); return; }
+    checks.forEach(chk=>{
+      let idx = parseInt(chk.value);
+      let f = filexferFiles[idx];
+      let a = document.createElement('a');
+      a.href = f.data;
+      a.download = f.name;
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+    document.getElementById('filexfer-status').textContent = "Download(s) started.";
+  }
+  // --- Self-Destruct Widget ---
+  function popupSelfdestruct() {
+    let html = `<b>Self-Destruct</b>
+    <div id="sd-timer" style="font-size:2em;color:#f00;margin:1em 0;">10</div>
+    <button onclick="abortSelfdestruct()" style="background:#0f0;color:#222;padding:0.7em 1.5em;font-weight:bold;">ABORT</button>
+    <div id="sd-status" style="color:#888;margin-top:0.7em;">All local data will be wiped.</div>`;
+    document.getElementById('popup-selfdestruct-content').innerHTML = html;
+    showPopup('popup-selfdestruct');
+    let t = 10; let intv = setInterval(()=>{
+      document.getElementById('sd-timer').textContent = t;
+      if(t<=0) {
+        clearInterval(intv);
+        document.getElementById('sd-status').textContent = "Self-destructing...";
+        setTimeout(()=>{
+          localStorage.clear();
+          location.reload();
+        }, 1000);
+      }
+      t--;
+    }, 1000);
+    window.abortSelfdestruct = function() {
+      clearInterval(intv);
+      document.getElementById('sd-status').textContent = "Self-destruct aborted.";
+      document.getElementById('sd-timer').textContent = "ABORTED";
+    };
+  }
+  // --- Register new commands ---
+  commandMap['hacksim'] = popupHacksim;
+  commandMap['qr'] = popupQr;
+  commandMap['filexfer'] = popupFilexfer;
+  commandMap['selfdestruct'] = popupSelfdestruct;
+  // --- End of eighth chunk ---
+</script>
+  <!-- === Place this block after the previous chunks, just before </body> === -->
+<!-- Port Scanner Popup -->
+<div class="popup" id="popup-portscan">
+  <div class="popup-header">Port Scanner<span class="popup-close" onclick="closePopup('popup-portscan')">&#10006;</span></div>
+  <div class="popup-content" id="popup-portscan-content"></div>
+</div>
+<!-- Syslog Popup -->
+<div class="popup" id="popup-syslog">
+  <div class="popup-header">System Log<span class="popup-close" onclick="closePopup('popup-syslog')">&#10006;</span></div>
+  <div class="popup-content" id="popup-syslog-content"></div>
+</div>
+<!-- Password Generator Popup -->
+<div class="popup" id="popup-pwgen">
+  <div class="popup-header">Password Generator<span class="popup-close" onclick="closePopup('popup-pwgen')">&#10006;</span></div>
+  <div class="popup-content" id="popup-pwgen-content"></div>
+</div>
+<!-- Dice Roller Popup -->
+<div class="popup" id="popup-dice">
+  <div class="popup-header">Dice Roller<span class="popup-close" onclick="closePopup('popup-dice')">&#10006;</span></div>
+  <div class="popup-content" id="popup-dice-content"></div>
+</div>
+<script>
+  // --- Port Scanner ---
+  function popupPortscan() {
+    let html = `<b>Port Scanner</b>
+    <form id="portscan-form" style="margin:0.7em 0;">
+      <input id="portscan-host" autocomplete="off" style="background:#000;color:#0f0;font-size:1em;border:none;border-bottom:1px solid #0f0;outline:none;width:120px;" value="192.168.1.42"/>
+      <button type="submit">Scan</button>
+    </form>
+    <div id="portscan-result" style="margin-top:0.8em;font-size:1.1em;"></div>`;
+    document.getElementById('popup-portscan-content').innerHTML = html;
+    showPopup('popup-portscan');
+    document.getElementById('portscan-form').onsubmit = function(e){
+      e.preventDefault();
+      let host = document.getElementById('portscan-host').value.trim()||"127.0.0.1";
+      document.getElementById('portscan-result').innerHTML = "Scanning "+host+" ...";
+      setTimeout(()=>showPortscan(host), 800+Math.random()*900);
+    };
+  }
+  function showPortscan(host) {
+    let ports = [
+      {port:22, service:"ssh", vuln:Math.random()<0.2?"Weak key":""},
+      {port:80, service:"http", vuln:Math.random()<0.1?"Directory traversal":""},
+      {port:443, service:"https", vuln:""},
+      {port:3389, service:"rdp", vuln:Math.random()<0.15?"BlueKeep":"",},
+      {port:21, service:"ftp", vuln:Math.random()<0.12?"Anonymous login":""},
+      {port:31337, service:"elite", vuln:"Backdoor"},
+      {port:5900, service:"vnc", vuln:""},
+      {port:8080, service:"http-proxy", vuln:""},
+      {port:1337, service:"ctf", vuln:""}
+    ];
+    let count = 3+Math.floor(Math.random()*5);
+    let open = [];
+    for(let i=0;i<count;i++){
+      let p = ports[Math.floor(Math.random()*ports.length)];
+      open.push(p);
+    }
+    let html = `<b>Scan results for ${host}:</b><br><table style="background:#101b0a;color:#0f0;width:99%;margin-top:0.4em;font-size:1em;border-radius:6px;"><tr><th>Port</th><th>Service</th><th>Vulnerability</th></tr>`;
+    open.forEach(p=>{
+      html += `<tr><td>${p.port}</td><td>${p.service}</td><td>${p.vuln?'<span style="color:#f00">'+p.vuln+'</span>':''}</td></tr>`;
+    });
+    html+="</table>";
+    document.getElementById('portscan-result').innerHTML = html;
+    logSyslog(`[pscan] Scan of ${host}: ${open.map(p=>p.port).join(", ")}`);
+  }
+  // --- Syslog Viewer ---
+  let syslogEntries = JSON.parse(localStorage.getItem("digit_syslog")||"[]");
+  function popupSyslog() {
+    let html = `<b>System Log</b>
+    <div id="syslog-view" style="height:140px;overflow-y:auto;background:#161d12;color:#0f0;margin:1em 0 0 0;padding:0.6em 0.8em;border-radius:7px;font-size:0.98em;"></div>
+    <button onclick="clearSyslog()">Clear Log</button>`;
+    document.getElementById('popup-syslog-content').innerHTML = html;
+    showPopup('popup-syslog');
+    renderSyslog();
+  }
+  function logSyslog(msg) {
+    let now = new Date();
+    let entry = `[${now.toLocaleTimeString()}] ${msg}`;
+    syslogEntries.push(entry);
+    if (syslogEntries.length>100) syslogEntries.shift();
+    localStorage.setItem("digit_syslog",JSON.stringify(syslogEntries));
+    renderSyslog();
+  }
+  function renderSyslog() {
+    let view = document.getElementById('syslog-view');
+    if (!view) return;
+    view.innerHTML = syslogEntries.join("<br>");
+    view.scrollTop = view.scrollHeight;
+  }
+  function clearSyslog() {
+    syslogEntries = [];
+    localStorage.setItem("digit_syslog","[]");
+    renderSyslog();
+  }
+  // Add syslog hooks to main actions
+  let oldLogUser = logUser, oldLogInfo = logInfo, oldLogError = logError;
+  logUser = function(msg){ oldLogUser(msg); logSyslog(`[user] $ ${msg}`);}
+  logInfo = function(msg){ oldLogInfo(msg); logSyslog(`[info] ${msg.replace(/<[^>]+>/g,'')}`);}
+  logError = function(msg){ oldLogError(msg); logSyslog(`[error] ${msg.replace(/<[^>]+>/g,'')}`);}
+  // --- Password Generator ---
+  function popupPwgen() {
+    let html = `<b>Password Generator</b>
+    <div style="margin:0.7em 0;">
+      <label>Length <input id="pwlen" type="number" value="16" min="6" max="64" style="width:60px;background:#000;color:#0f0;border:none;border-bottom:1px solid #0f0;"></label>
+      <label style="margin-left:1.1em;">Theme 
+        <select id="pwtheme" style="background:#000;color:#0f0;">
+          <option value="leet">Leet</option>
+          <option value="hex">Hex</option>
+          <option value="base64">Base64</option>
+          <option value="symbols">Symbols</option>
+          <option value="classic">Classic</option>
+        </select>
+      </label>
+      <button onclick="genPw()">Generate</button>
+    </div>
+    <div id="pwgen-out" style="font-size:1.2em;color:#0ff;margin:1em 0;"></div>
+    <button onclick="copyPwgen()">Copy</button>
+    <div id="pwgen-status" style="color:#888;"></div>`;
+    document.getElementById('popup-pwgen-content').innerHTML = html;
+    showPopup('popup-pwgen');
+    genPw();
+  }
+  function genPw() {
+    let len = Math.max(6,Math.min(64,parseInt(document.getElementById('pwlen').value)||16));
+    let theme = document.getElementById('pwtheme').value;
+    let chars = {
+      classic: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+      leet: "48BCEFGHIJK1MN0PQR57UVWXY23456789!#@",
+      hex: "abcdef0123456789",
+      base64: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
+      symbols: "!@#$%^&*()_+[]{};:?.,<>-=/|~"
+    }[theme] || "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let out = "";
+    for(let i=0;i<len;i++) out+=chars[Math.floor(Math.random()*chars.length)];
+    document.getElementById('pwgen-out').textContent = out;
+    document.getElementById('pwgen-status').textContent = "Password generated.";
+  }
+  function copyPwgen() {
+    let pw = document.getElementById('pwgen-out').textContent;
+    navigator.clipboard.writeText(pw).then(()=>{
+      document.getElementById('pwgen-status').textContent = "Copied to clipboard!";
+    });
+  }
+  // --- Dice Roller ---
+  function popupDice() {
+    let html = `<b>Dice & RNG</b>
+    <form id="dice-form" style="margin:0.7em 0;">
+      <label>Type 
+        <select id="dice-type" style="background:#000;color:#0f0;">
+          <option value="d6">d6</option>
+          <option value="d20">d20</option>
+          <option value="coin">Coin Flip</option>
+          <option value="rng">RNG 1-100</option>
+        </select>
+      </label>
+      <label style="margin-left:1em;">Rolls <input id="dice-rolls" type="number" value="1" min="1" max="10" style="width:50px;background:#000;color:#0f0;border:none;border-bottom:1px solid #0f0;"></label>
+      <button type="submit">Roll</button>
+    </form>
+    <div id="dice-out" style="font-size:1.35em;color:#0ff;margin:1em 0;"></div>`;
+    document.getElementById('popup-dice-content').innerHTML = html;
+    showPopup('popup-dice');
+    document.getElementById('dice-form').onsubmit = function(e){
+      e.preventDefault();
+      let type = document.getElementById('dice-type').value;
+      let rolls = Math.max(1,Math.min(10,parseInt(document.getElementById('dice-rolls').value)||1));
+      let out = [];
+      for(let i=0;i<rolls;i++){
+        if(type==="coin") out.push(Math.random()<0.5?"HEADS":"TAILS");
+        else if(type==="rng") out.push(1+Math.floor(Math.random()*100));
+        else if(type==="d6") out.push(1+Math.floor(Math.random()*6));
+        else if(type==="d20") out.push(1+Math.floor(Math.random()*20));
+      }
+      document.getElementById('dice-out').textContent = out.join(", ");
+    }
+  }
+  // --- Register new commands ---
+  commandMap['portscan'] = popupPortscan;
+  commandMap['syslog'] = popupSyslog;
+  commandMap['pwgen'] = popupPwgen;
+  commandMap['dice'] = popupDice;
+  // --- End of ninth chunk ---
+</script>
 </body>
 </html>
