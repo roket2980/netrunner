@@ -1,82 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Kali Linux Terminal Replica</title>
+  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&display=swap" rel="stylesheet">
   <style>
-    body {
-      background: #222831;
-      color: #eeeeee;
-      font-family: 'Fira Mono', 'Consolas', monospace;
+    html, body {
+      height: 100%;
       margin: 0;
-      height: 100vh;
+      background: #222831;
+    }
+    body {
       display: flex;
       justify-content: center;
       align-items: center;
+      min-height: 100vh;
+    }
+    .window {
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 32px 4px #000a;
+      min-width: 700px;
+      max-width: 80vw;
+      min-height: 400px;
+      background: #23272e;
+      border: 2px solid #20232a;
+    }
+    .bar {
+      background: linear-gradient(90deg, #454b53 0%, #343942 100%);
+      height: 36px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+    }
+    .dots {
+      display: flex;
+      gap: 8px;
+      margin-right: 12px;
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ff5f56;
+      border: 1.5px solid #d32d23;
+    }
+    .dot:nth-child(2) {
+      background: #ffbd2e;
+      border-color: #b38a13;
+    }
+    .dot:nth-child(3) {
+      background: #27c93f;
+      border-color: #179a24;
+    }
+    .bar-title {
+      color: #ccc;
+      font-family: 'Fira Mono', monospace;
+      font-size: 1.1em;
+      margin-left: 6px;
+      letter-spacing: 1px;
+      user-select: none;
     }
     .terminal {
       background: #121212;
-      border-radius: 7px;
-      box-shadow: 0 0 24px 2px #1118;
-      padding: 24px 32px;
-      min-width: 600px;
-      min-height: 300px;
-      max-width: 90vw;
-      max-height: 70vh;
-      overflow: auto;
-      font-size: 1.1em;
+      height: 340px;
+      overflow-y: auto;
+      padding: 18px 16px 12px 18px;
+      font-family: 'Fira Mono', monospace;
+      font-size: 1.13em;
+      color: #eeeeee;
+      outline: none;
       line-height: 1.5;
+      user-select: text;
+    }
+    .prompt-line {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
     }
     .prompt {
       color: #00e676;
+      font-weight: bold;
+      user-select: none;
     }
-    .user {
-      color: #00bcd4;
-    }
-    .host {
-      color: #ef5350;
-    }
-    .path {
-      color: #ffd600;
-    }
+    .prompt .user { color: #00bcd4; }
+    .prompt .host { color: #ef5350; }
+    .prompt .path { color: #ffd600; }
     .input {
-      display: inline;
       background: none;
       border: none;
-      color: #eeeeee;
-      outline: none;
+      color: inherit;
       font-family: inherit;
-      font-size: inherit;
-      width: 70%;
+      font-size: 1em;
+      outline: none;
+      flex: 1 0 0;
+      min-width: 20px;
+      caret-color: #eeeeee;
+      margin-left: 2px;
+      padding: 0;
+    }
+    .output {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 1em;
+      color: #cfcfcf;
+      margin-left: 1.2em;
+    }
+    .blinker {
+      display: inline-block;
+      width: 10px;
+      height: 1.1em;
+      vertical-align: middle;
+      background: #eeeeee;
+      margin-left: 2px;
+      animation: blink 1s steps(1) infinite;
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+    /* Scrollbar Styling */
+    .terminal::-webkit-scrollbar {
+      width: 10px;
+      background: #222831;
+    }
+    .terminal::-webkit-scrollbar-thumb {
+      background: #343942;
+      border-radius: 6px;
+    }
+    /* Responsive */
+    @media (max-width: 700px) {
+      .window { min-width: 95vw; }
+      .terminal { font-size: 0.93em; }
     }
   </style>
 </head>
 <body>
-  <div class="terminal" id="terminal" tabindex="0">
-    <div><span class="prompt"><span class="user">root</span>@<span class="host">kali</span>:<span class="path">~</span>#</span> <input class="input" id="cmd" autocomplete="off" autofocus /></div>
+  <div class="window">
+    <div class="bar">
+      <div class="dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <span class="bar-title">root@kali: ~</span>
+    </div>
+    <div class="terminal" id="terminal" tabindex="0" spellcheck="false"></div>
   </div>
   <script>
     const terminal = document.getElementById('terminal');
-    const cmdInput = document.getElementById('cmd');
     let history = [];
     let histPos = 0;
+    let currentInput = '';
+    const promptTemplate =
+      `<span class="prompt"><span class="user">root</span>@<span class="host">kali</span>:<span class="path">~</span>#</span>`;
+
+    // Banner (like a login message)
     const banner = [
       "┌──(root㉿kali)-[~]",
-      "└─# Welcome to your Kali Linux Terminal Replica!",
+      "└─# Welcome to Kali Linux. Type 'help' to get started.",
       ""
     ];
 
-    function printBanner() {
-      banner.forEach(line => {
+    function addBanner() {
+      for (const line of banner) {
         const div = document.createElement('div');
         div.textContent = line;
-        terminal.insertBefore(div, terminal.firstChild);
+        terminal.appendChild(div);
+      }
+    }
+
+    function scrollToBottom() {
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function addPrompt(inputVal = "") {
+      const line = document.createElement('div');
+      line.className = 'prompt-line';
+      line.innerHTML = promptTemplate +
+        `<input class="input" id="current-input" autocomplete="off" autofocus />` +
+        `<span class="blinker" id="blinker"></span>`;
+      terminal.appendChild(line);
+      const inp = line.querySelector('.input');
+      inp.value = inputVal;
+      inp.focus();
+      scrollToBottom();
+      // Blinker follows input
+      inp.addEventListener('input', () => {
+        scrollToBottom();
       });
     }
 
-    function handleCommand(cmd) {
+    function addOutput(text) {
+      if (text === "") return;
+      const out = document.createElement('div');
+      out.className = 'output';
+      out.textContent = text;
+      terminal.appendChild(out);
+      scrollToBottom();
+    }
+
+    function runCommand(cmd) {
       let out = "";
-      cmd = cmd.trim();
       if (cmd === "ls" || cmd === "dir") {
         out = "Desktop  Documents  Downloads  Music  Pictures  Public  Templates  Videos";
       } else if (cmd === "whoami") {
@@ -87,6 +211,7 @@
         out = "Linux kali 6.3.0-kali1-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.3.7-1kali1 (2024-06-01) x86_64 GNU/Linux";
       } else if (cmd === "clear") {
         terminal.innerHTML = '';
+        addBanner();
         return;
       } else if (cmd === "help") {
         out = "Try: ls, pwd, whoami, uname, clear, echo, or any command (simulated).";
@@ -97,49 +222,65 @@
       } else {
         out = `bash: ${cmd}: command not found`;
       }
-      const div = document.createElement('div');
-      div.textContent = out;
-      terminal.appendChild(div);
+      addOutput(out);
     }
 
-    cmdInput.addEventListener('keydown', function(e) {
+    function handleInput(e) {
+      const inp = document.getElementById('current-input');
+      if (!inp) return;
       if (e.key === 'Enter') {
-        const command = cmdInput.value;
-        // Print command
-        const div = document.createElement('div');
-        div.innerHTML =
-          `<span class="prompt"><span class="user">root</span>@<span class="host">kali</span>:<span class="path">~</span>#</span> ${command}`;
-        terminal.insertBefore(div, cmdInput.parentElement);
-        history.push(command);
+        const cmd = inp.value;
+        // Print the full prompt + command
+        inp.parentNode.innerHTML = promptTemplate + " " + cmd;
+        history.push(cmd);
         histPos = history.length;
-        handleCommand(command);
-        cmdInput.value = '';
-        terminal.scrollTop = terminal.scrollHeight;
+        runCommand(cmd);
+        addPrompt();
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         if (histPos > 0) {
           histPos--;
-          cmdInput.value = history[histPos];
+          inp.value = history[histPos];
         }
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
         if (histPos < history.length - 1) {
           histPos++;
-          cmdInput.value = history[histPos];
+          inp.value = history[histPos];
         } else {
           histPos = history.length;
-          cmdInput.value = '';
+          inp.value = '';
         }
       }
-    });
+      scrollToBottom();
+    }
 
-    // Focus input when clicking on terminal
+    // Focus input on click anywhere in terminal
     terminal.addEventListener('mousedown', () => {
-      cmdInput.focus();
+      const inp = document.getElementById('current-input');
+      if (inp) inp.focus();
     });
 
-    printBanner();
-    cmdInput.focus();
+    // Initial setup
+    addBanner();
+    addPrompt();
+
+    // Global key handler (for focus-out)
+    terminal.addEventListener('keydown', handleInput);
+
+    // Keep input focused if user tabs away
+    terminal.addEventListener('focusout', () => {
+      setTimeout(() => {
+        const inp = document.getElementById('current-input');
+        if (inp) inp.focus();
+      }, 10);
+    });
+
+    // Autofocus on load
+    setTimeout(() => {
+      const inp = document.getElementById('current-input');
+      if (inp) inp.focus();
+    }, 100);
   </script>
 </body>
 </html>
