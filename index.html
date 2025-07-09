@@ -8,6 +8,7 @@
     html, body {
       height: 100%;
       margin: 0;
+      padding: 0;
       background: #222831;
     }
     body {
@@ -16,145 +17,169 @@
       align-items: center;
       min-height: 100vh;
     }
-    .window {
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 0 32px 4px #000a;
-      min-width: 700px;
-      max-width: 80vw;
-      min-height: 400px;
+    .kali-window {
       background: #23272e;
+      border-radius: 8px;
+      box-shadow: 0 0 32px 4px #000a;
+      min-width: 720px;
+      max-width: 90vw;
+      min-height: 420px;
       border: 2px solid #20232a;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
-    .bar {
+    .kali-bar {
       background: linear-gradient(90deg, #454b53 0%, #343942 100%);
       height: 36px;
       display: flex;
       align-items: center;
-      padding: 0 12px;
+      padding: 0 16px;
+      user-select: none;
     }
-    .dots {
+    .kali-dots {
       display: flex;
       gap: 8px;
       margin-right: 12px;
     }
-    .dot {
+    .kali-dot {
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      background: #ff5f56;
-      border: 1.5px solid #d32d23;
+      margin-top: 2px;
     }
-    .dot:nth-child(2) {
-      background: #ffbd2e;
-      border-color: #b38a13;
-    }
-    .dot:nth-child(3) {
-      background: #27c93f;
-      border-color: #179a24;
-    }
-    .bar-title {
-      color: #ccc;
+    .kali-dot.red { background: #ff5f56; border: 1.5px solid #d32d23; }
+    .kali-dot.yellow { background: #ffbd2e; border: 1.5px solid #b38a13; }
+    .kali-dot.green { background: #27c93f; border: 1.5px solid #179a24; }
+    .kali-bar-title {
+      color: #c7c7c7;
       font-family: 'Fira Mono', monospace;
-      font-size: 1.1em;
+      font-size: 1.08em;
       margin-left: 6px;
       letter-spacing: 1px;
-      user-select: none;
+      flex: 1;
     }
-    .terminal {
+    .kali-terminal {
       background: #121212;
-      height: 340px;
+      height: 350px;
       overflow-y: auto;
       padding: 18px 16px 12px 18px;
       font-family: 'Fira Mono', monospace;
-      font-size: 1.13em;
+      font-size: 1.12em;
       color: #eeeeee;
       outline: none;
       line-height: 1.5;
+      flex: 1;
       user-select: text;
     }
     .prompt-line {
       display: flex;
       align-items: center;
       flex-wrap: wrap;
+      font-size: 1em;
+      margin-bottom: 1px;
     }
     .prompt {
       color: #00e676;
       font-weight: bold;
       user-select: none;
+      font-size: 1.03em;
     }
     .prompt .user { color: #00bcd4; }
     .prompt .host { color: #ef5350; }
     .prompt .path { color: #ffd600; }
-    .input {
+    .shell-input {
       background: none;
       border: none;
       color: inherit;
       font-family: inherit;
       font-size: 1em;
       outline: none;
-      flex: 1 0 0;
       min-width: 20px;
-      caret-color: #eeeeee;
-      margin-left: 2px;
+      caret-color: transparent;
       padding: 0;
+      margin-left: 2px;
+      flex: 1 0 0;
+      position: relative;
+      z-index: 1;
     }
     .output {
       white-space: pre-wrap;
       word-break: break-word;
       font-size: 1em;
       color: #cfcfcf;
-      margin-left: 1.2em;
+      margin-left: 1.6em;
+      margin-bottom: 1px;
     }
     .blinker {
       display: inline-block;
       width: 10px;
-      height: 1.1em;
+      height: 1.18em;
       vertical-align: middle;
       background: #eeeeee;
-      margin-left: 2px;
+      margin-left: -10px;
+      position: relative;
+      z-index: 3;
       animation: blink 1s steps(1) infinite;
     }
     @keyframes blink {
       50% { opacity: 0; }
     }
-    /* Scrollbar Styling */
-    .terminal::-webkit-scrollbar {
+    .kali-terminal::-webkit-scrollbar {
       width: 10px;
       background: #222831;
     }
-    .terminal::-webkit-scrollbar-thumb {
+    .kali-terminal::-webkit-scrollbar-thumb {
       background: #343942;
       border-radius: 6px;
     }
-    /* Responsive */
-    @media (max-width: 700px) {
-      .window { min-width: 95vw; }
-      .terminal { font-size: 0.93em; }
+    @media (max-width: 720px) {
+      .kali-window { min-width: 99vw; }
+      .kali-terminal { font-size: 0.93em; }
+    }
+    ::selection {
+      background: #3f51b5;
+      color: #fff;
     }
   </style>
 </head>
 <body>
-  <div class="window">
-    <div class="bar">
-      <div class="dots">
-        <div class="dot"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
+  <div class="kali-window">
+    <div class="kali-bar">
+      <div class="kali-dots">
+        <div class="kali-dot red"></div>
+        <div class="kali-dot yellow"></div>
+        <div class="kali-dot green"></div>
       </div>
-      <span class="bar-title">root@kali: ~</span>
+      <span class="kali-bar-title">root@kali: ~</span>
     </div>
-    <div class="terminal" id="terminal" tabindex="0" spellcheck="false"></div>
+    <div class="kali-terminal" id="kali-terminal" tabindex="0" spellcheck="false"></div>
   </div>
   <script>
-    const terminal = document.getElementById('terminal');
+    // Fake file system for ls/cd realism
+    const fileSystem = {
+      "/": ["home", "root", "etc", "usr", "bin", "var", "tmp"],
+      "/root": ["Desktop", "Documents", "Downloads", "Music", "Pictures", "Public", "Templates", "Videos"],
+      "/root/Desktop": [],
+      "/home": ["kali"],
+      "/home/kali": ["Desktop", "Documents", "Downloads"],
+      "/home/kali/Desktop": [],
+      "/etc": [],
+      "/usr": [],
+      "/bin": [],
+      "/var": [],
+      "/tmp": [],
+    };
+
+    let currentPath = "/root";
     let history = [];
     let histPos = 0;
-    let currentInput = '';
-    const promptTemplate =
-      `<span class="prompt"><span class="user">root</span>@<span class="host">kali</span>:<span class="path">~</span>#</span>`;
 
-    // Banner (like a login message)
+    const terminal = document.getElementById('kali-terminal');
+    const promptTemplate = (cwd) =>
+      `<span class="prompt"><span class="user">root</span>@<span class="host">kali</span>:<span class="path">${cwd.replace("/root", "~")}</span>#</span>`;
+
+    // Banner
     const banner = [
       "┌──(root㉿kali)-[~]",
       "└─# Welcome to Kali Linux. Type 'help' to get started.",
@@ -176,18 +201,15 @@
     function addPrompt(inputVal = "") {
       const line = document.createElement('div');
       line.className = 'prompt-line';
-      line.innerHTML = promptTemplate +
-        `<input class="input" id="current-input" autocomplete="off" autofocus />` +
+      line.innerHTML = promptTemplate(currentPath) +
+        `<input class="shell-input" id="shell-input" autocomplete="off" autofocus />` +
         `<span class="blinker" id="blinker"></span>`;
       terminal.appendChild(line);
-      const inp = line.querySelector('.input');
+      const inp = line.querySelector('.shell-input');
       inp.value = inputVal;
       inp.focus();
       scrollToBottom();
-      // Blinker follows input
-      inp.addEventListener('input', () => {
-        scrollToBottom();
-      });
+      inp.addEventListener('input', scrollToBottom);
     }
 
     function addOutput(text) {
@@ -201,40 +223,67 @@
 
     function runCommand(cmd) {
       let out = "";
-      if (cmd === "ls" || cmd === "dir") {
-        out = "Desktop  Documents  Downloads  Music  Pictures  Public  Templates  Videos";
-      } else if (cmd === "whoami") {
+      let trimmed = cmd.trim();
+      if (trimmed === "ls") {
+        out = (fileSystem[currentPath] || []).join("  ");
+      } else if (trimmed.startsWith("cd")) {
+        let [, path] = trimmed.split(" ");
+        if (!path || path === "~") path = "/root";
+        else if (path === "..") {
+          if (currentPath !== "/" && currentPath !== "/root") {
+            currentPath = currentPath.replace(/\/[^\/]+$/, "") || "/";
+          } else if (currentPath === "/root") {
+            currentPath = "/";
+          }
+        } else if (path.startsWith("/")) {
+          if (fileSystem[path]) currentPath = path;
+          else out = `bash: cd: ${path}: No such file or directory`;
+        } else if (fileSystem[currentPath + "/" + path]) {
+          currentPath += "/" + path;
+        } else if (fileSystem["/root/" + path] && currentPath === "/root") {
+          currentPath = "/root/" + path;
+        } else if (fileSystem["/" + path] && currentPath === "/") {
+          currentPath = "/" + path;
+        } else {
+          out = `bash: cd: ${path}: No such file or directory`;
+        }
+      } else if (trimmed === "pwd") {
+        out = currentPath;
+      } else if (trimmed === "whoami") {
         out = "root";
-      } else if (cmd === "pwd") {
-        out = "/root";
-      } else if (cmd === "uname" || cmd === "uname -a") {
+      } else if (trimmed === "uname" || trimmed === "uname -a") {
         out = "Linux kali 6.3.0-kali1-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.3.7-1kali1 (2024-06-01) x86_64 GNU/Linux";
-      } else if (cmd === "clear") {
+      } else if (trimmed === "clear") {
         terminal.innerHTML = '';
         addBanner();
         return;
-      } else if (cmd === "help") {
-        out = "Try: ls, pwd, whoami, uname, clear, echo, or any command (simulated).";
-      } else if (cmd.startsWith("echo ")) {
-        out = cmd.slice(5);
-      } else if (cmd === "") {
+      } else if (trimmed === "help") {
+        out = [
+          "Available commands: ls, cd, pwd, whoami, uname, clear, echo, help, exit",
+          "Directory navigation is simulated."
+        ].join("\n");
+      } else if (trimmed.startsWith("echo ")) {
+        out = trimmed.slice(5);
+      } else if (trimmed === "exit") {
+        out = "logout";
+        setTimeout(() => window.location.reload(), 600);
+      } else if (trimmed === "") {
         out = "";
       } else {
-        out = `bash: ${cmd}: command not found`;
+        out = `bash: ${trimmed.split(" ")[0]}: command not found`;
       }
       addOutput(out);
     }
 
     function handleInput(e) {
-      const inp = document.getElementById('current-input');
+      const inp = document.getElementById('shell-input');
       if (!inp) return;
       if (e.key === 'Enter') {
-        const cmd = inp.value;
-        // Print the full prompt + command
-        inp.parentNode.innerHTML = promptTemplate + " " + cmd;
-        history.push(cmd);
+        // Print prompt+command
+        inp.parentNode.innerHTML = promptTemplate(currentPath) + " " + inp.value;
+        history.push(inp.value);
         histPos = history.length;
-        runCommand(cmd);
+        runCommand(inp.value);
         addPrompt();
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
@@ -255,30 +304,25 @@
       scrollToBottom();
     }
 
-    // Focus input on click anywhere in terminal
     terminal.addEventListener('mousedown', () => {
-      const inp = document.getElementById('current-input');
+      const inp = document.getElementById('shell-input');
       if (inp) inp.focus();
     });
 
-    // Initial setup
-    addBanner();
-    addPrompt();
-
-    // Global key handler (for focus-out)
     terminal.addEventListener('keydown', handleInput);
 
-    // Keep input focused if user tabs away
     terminal.addEventListener('focusout', () => {
       setTimeout(() => {
-        const inp = document.getElementById('current-input');
+        const inp = document.getElementById('shell-input');
         if (inp) inp.focus();
       }, 10);
     });
 
-    // Autofocus on load
+    // Initial render
+    addBanner();
+    addPrompt();
     setTimeout(() => {
-      const inp = document.getElementById('current-input');
+      const inp = document.getElementById('shell-input');
       if (inp) inp.focus();
     }, 100);
   </script>
