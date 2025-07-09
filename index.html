@@ -1,94 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Kali Linux Terminal Replica</title>
   <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&display=swap" rel="stylesheet">
   <style>
     html, body {
       height: 100%;
       margin: 0;
-      padding: 0;
       background: #222831;
     }
     body {
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       min-height: 100vh;
     }
-    .kali-window {
-      background: #23272e;
-      border-radius: 8px;
-      box-shadow: 0 0 32px 4px #000a;
-      min-width: 720px;
-      max-width: 90vw;
+    .window {
+      min-width: 740px;
+      max-width: 880px;
       min-height: 420px;
-      border: 2px solid #20232a;
-      overflow: hidden;
+      max-height: 90vh;
+      background: #202124;
+      border-radius: 8px;
+      box-shadow: 0 8px 44px 0 #000a;
       display: flex;
       flex-direction: column;
+      border: 2.5px solid #191a1d;
+      overflow: hidden;
     }
-    .kali-bar {
-      background: linear-gradient(90deg, #454b53 0%, #343942 100%);
-      height: 36px;
+    .titlebar {
+      height: 32px;
+      background: linear-gradient(90deg, #363b40 0%, #23252b 100%);
       display: flex;
       align-items: center;
-      padding: 0 16px;
+      padding: 0 14px;
       user-select: none;
     }
-    .kali-dots {
+    .window-btns {
       display: flex;
-      gap: 8px;
-      margin-right: 12px;
+      gap: 7px;
+      margin-right: 14px;
     }
-    .kali-dot {
-      width: 12px;
-      height: 12px;
+    .window-btn {
+      width: 11px;
+      height: 11px;
       border-radius: 50%;
-      margin-top: 2px;
+      margin-top: 1px;
+      border: 1.5px solid #222831;
+      box-sizing: border-box;
     }
-    .kali-dot.red { background: #ff5f56; border: 1.5px solid #d32d23; }
-    .kali-dot.yellow { background: #ffbd2e; border: 1.5px solid #b38a13; }
-    .kali-dot.green { background: #27c93f; border: 1.5px solid #179a24; }
-    .kali-bar-title {
+    .window-btn.red { background: #ff5f56; }
+    .window-btn.yellow { background: #ffbd2e; }
+    .window-btn.green { background: #27c93f; }
+    .title {
       color: #c7c7c7;
       font-family: 'Fira Mono', monospace;
-      font-size: 1.08em;
-      margin-left: 6px;
-      letter-spacing: 1px;
+      font-size: 1.09em;
+      letter-spacing: 1.1px;
+      margin-left: 7px;
       flex: 1;
     }
-    .kali-terminal {
-      background: #121212;
-      height: 350px;
-      overflow-y: auto;
-      padding: 18px 16px 12px 18px;
+    .terminal {
+      background: #181a1b;
       font-family: 'Fira Mono', monospace;
-      font-size: 1.12em;
+      font-size: 1.04em;
       color: #eeeeee;
-      outline: none;
-      line-height: 1.5;
       flex: 1;
-      user-select: text;
+      padding: 22px 21px 16px 23px;
+      overflow-y: auto;
+      line-height: 1.48;
+      outline: none;
+      min-height: 320px;
+      box-sizing: border-box;
     }
     .prompt-line {
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      font-size: 1em;
-      margin-bottom: 1px;
+      margin-bottom: 2px;
     }
     .prompt {
       color: #00e676;
       font-weight: bold;
       user-select: none;
-      font-size: 1.03em;
+      font-size: 1.01em;
     }
-    .prompt .user { color: #00bcd4; }
-    .prompt .host { color: #ef5350; }
-    .prompt .path { color: #ffd600; }
-    .shell-input {
+    .user { color: #00bcd4; }
+    .host { color: #ef5350; }
+    .path { color: #ffd600; }
+    .input {
       background: none;
       border: none;
       color: inherit;
@@ -96,28 +97,27 @@
       font-size: 1em;
       outline: none;
       min-width: 20px;
-      caret-color: transparent;
+      margin-left: 3px;
       padding: 0;
-      margin-left: 2px;
       flex: 1 0 0;
-      position: relative;
-      z-index: 1;
+      caret-color: transparent;
+      z-index: 2;
     }
     .output {
       white-space: pre-wrap;
       word-break: break-word;
       font-size: 1em;
       color: #cfcfcf;
-      margin-left: 1.6em;
+      margin-left: 1.7em;
       margin-bottom: 1px;
     }
     .blinker {
       display: inline-block;
-      width: 10px;
-      height: 1.18em;
+      width: 11px;
+      height: 1.24em;
       vertical-align: middle;
       background: #eeeeee;
-      margin-left: -10px;
+      margin-left: -11px;
       position: relative;
       z-index: 3;
       animation: blink 1s steps(1) infinite;
@@ -125,38 +125,38 @@
     @keyframes blink {
       50% { opacity: 0; }
     }
-    .kali-terminal::-webkit-scrollbar {
+    .terminal::-webkit-scrollbar {
       width: 10px;
-      background: #222831;
+      background: #23252b;
     }
-    .kali-terminal::-webkit-scrollbar-thumb {
+    .terminal::-webkit-scrollbar-thumb {
       background: #343942;
-      border-radius: 6px;
+      border-radius: 7px;
     }
-    @media (max-width: 720px) {
-      .kali-window { min-width: 99vw; }
-      .kali-terminal { font-size: 0.93em; }
+    @media (max-width: 750px) {
+      .window { min-width: 99vw; }
+      .terminal { font-size: 0.91em; }
     }
     ::selection {
-      background: #3f51b5;
+      background: #1976d2;
       color: #fff;
     }
   </style>
 </head>
 <body>
-  <div class="kali-window">
-    <div class="kali-bar">
-      <div class="kali-dots">
-        <div class="kali-dot red"></div>
-        <div class="kali-dot yellow"></div>
-        <div class="kali-dot green"></div>
+  <div class="window">
+    <div class="titlebar">
+      <div class="window-btns">
+        <div class="window-btn red"></div>
+        <div class="window-btn yellow"></div>
+        <div class="window-btn green"></div>
       </div>
-      <span class="kali-bar-title">root@kali: ~</span>
+      <span class="title">root@kali: ~</span>
     </div>
-    <div class="kali-terminal" id="kali-terminal" tabindex="0" spellcheck="false"></div>
+    <div class="terminal" id="terminal" tabindex="0" spellcheck="false"></div>
   </div>
   <script>
-    // Fake file system for ls/cd realism
+    // Simulated file system for realistic 'ls' and 'cd'
     const fileSystem = {
       "/": ["home", "root", "etc", "usr", "bin", "var", "tmp"],
       "/root": ["Desktop", "Documents", "Downloads", "Music", "Pictures", "Public", "Templates", "Videos"],
@@ -170,16 +170,15 @@
       "/var": [],
       "/tmp": [],
     };
-
     let currentPath = "/root";
     let history = [];
     let histPos = 0;
 
-    const terminal = document.getElementById('kali-terminal');
+    const terminal = document.getElementById('terminal');
     const promptTemplate = (cwd) =>
       `<span class="prompt"><span class="user">root</span>@<span class="host">kali</span>:<span class="path">${cwd.replace("/root", "~")}</span>#</span>`;
 
-    // Banner
+    // Banner (matches Kali fresh login)
     const banner = [
       "┌──(root㉿kali)-[~]",
       "└─# Welcome to Kali Linux. Type 'help' to get started.",
@@ -202,10 +201,10 @@
       const line = document.createElement('div');
       line.className = 'prompt-line';
       line.innerHTML = promptTemplate(currentPath) +
-        `<input class="shell-input" id="shell-input" autocomplete="off" autofocus />` +
+        `<input class="input" id="input-line" autocomplete="off" autofocus />` +
         `<span class="blinker" id="blinker"></span>`;
       terminal.appendChild(line);
-      const inp = line.querySelector('.shell-input');
+      const inp = line.querySelector('.input');
       inp.value = inputVal;
       inp.focus();
       scrollToBottom();
@@ -224,6 +223,7 @@
     function runCommand(cmd) {
       let out = "";
       let trimmed = cmd.trim();
+      // Simulate commands
       if (trimmed === "ls") {
         out = (fileSystem[currentPath] || []).join("  ");
       } else if (trimmed.startsWith("cd")) {
@@ -266,7 +266,7 @@
         out = trimmed.slice(5);
       } else if (trimmed === "exit") {
         out = "logout";
-        setTimeout(() => window.location.reload(), 600);
+        setTimeout(() => window.location.reload(), 800);
       } else if (trimmed === "") {
         out = "";
       } else {
@@ -276,10 +276,9 @@
     }
 
     function handleInput(e) {
-      const inp = document.getElementById('shell-input');
+      const inp = document.getElementById('input-line');
       if (!inp) return;
       if (e.key === 'Enter') {
-        // Print prompt+command
         inp.parentNode.innerHTML = promptTemplate(currentPath) + " " + inp.value;
         history.push(inp.value);
         histPos = history.length;
@@ -305,7 +304,7 @@
     }
 
     terminal.addEventListener('mousedown', () => {
-      const inp = document.getElementById('shell-input');
+      const inp = document.getElementById('input-line');
       if (inp) inp.focus();
     });
 
@@ -313,7 +312,7 @@
 
     terminal.addEventListener('focusout', () => {
       setTimeout(() => {
-        const inp = document.getElementById('shell-input');
+        const inp = document.getElementById('input-line');
         if (inp) inp.focus();
       }, 10);
     });
@@ -322,9 +321,9 @@
     addBanner();
     addPrompt();
     setTimeout(() => {
-      const inp = document.getElementById('shell-input');
+      const inp = document.getElementById('input-line');
       if (inp) inp.focus();
-    }, 100);
+    }, 120);
   </script>
 </body>
 </html>
