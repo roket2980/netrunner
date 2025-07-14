@@ -2,328 +2,106 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Kali Linux Terminal Replica</title>
-  <link href="https://fonts.googleapis.com/css?family=Fira+Mono:400,700&display=swap" rel="stylesheet">
+  <title>The Truth - Matrix Reveal</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
     html, body {
       height: 100%;
       margin: 0;
-      background: #222831;
-    }
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-    .window {
-      min-width: 740px;
-      max-width: 880px;
-      min-height: 420px;
-      max-height: 90vh;
-      background: #202124;
-      border-radius: 8px;
-      box-shadow: 0 8px 44px 0 #000a;
-      display: flex;
-      flex-direction: column;
-      border: 2.5px solid #191a1d;
+      padding: 0;
+      background: black;
       overflow: hidden;
     }
-    .titlebar {
-      height: 32px;
-      background: linear-gradient(90deg, #363b40 0%, #23252b 100%);
-      display: flex;
-      align-items: center;
-      padding: 0 14px;
-      user-select: none;
+    #matrix-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      display: block;
+      pointer-events: none;
     }
-    .window-btns {
-      display: flex;
-      gap: 7px;
-      margin-right: 14px;
-    }
-    .window-btn {
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-      margin-top: 1px;
-      border: 1.5px solid #222831;
-      box-sizing: border-box;
-    }
-    .window-btn.red { background: #ff5f56; }
-    .window-btn.yellow { background: #ffbd2e; }
-    .window-btn.green { background: #27c93f; }
-    .title {
-      color: #c7c7c7;
-      font-family: 'Fira Mono', monospace;
-      font-size: 1.09em;
-      letter-spacing: 1.1px;
-      margin-left: 7px;
-      flex: 1;
-    }
-    .terminal {
-      background: #181a1b;
-      font-family: 'Fira Mono', monospace;
-      font-size: 1.04em;
-      color: #eeeeee;
-      flex: 1;
-      padding: 22px 21px 16px 23px;
-      overflow-y: auto;
-      line-height: 1.48;
-      outline: none;
-      min-height: 320px;
-      box-sizing: border-box;
-    }
-    .prompt-line {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 2px;
-    }
-    .prompt {
-      color: #00e676;
-      font-weight: bold;
-      user-select: none;
-      font-size: 1.01em;
-    }
-    .user { color: #00bcd4; }
-    .host { color: #ef5350; }
-    .path { color: #ffd600; }
-    .input {
-      background: none;
-      border: none;
-      color: inherit;
-      font-family: inherit;
-      font-size: 1em;
-      outline: none;
-      min-width: 20px;
-      margin-left: 3px;
-      padding: 0;
-      flex: 1 0 0;
-      caret-color: transparent;
+    #truth-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 90vw;
+      max-width: 900px;
+      transform: translate(-50%, -50%);
+      color: #00ff41;
+      background: rgba(0,0,0,0.8);
+      padding: 2em 2em 2em 2em;
+      border-radius: 12px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 1.15em;
+      letter-spacing: 0.5px;
+      line-height: 1.55;
       z-index: 2;
+      text-shadow: 0 0 8px #00ff41, 0 0 2px #00ff41;
+      box-shadow: 0 0 40px #00ff41aa;
+      user-select: text;
+      overflow-y: auto;
+      max-height: 80vh;
     }
-    .output {
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-size: 1em;
-      color: #cfcfcf;
-      margin-left: 1.7em;
-      margin-bottom: 1px;
-    }
-    .blinker {
-      display: inline-block;
-      width: 11px;
-      height: 1.24em;
-      vertical-align: middle;
-      background: #eeeeee;
-      margin-left: -11px;
-      position: relative;
-      z-index: 3;
-      animation: blink 1s steps(1) infinite;
-    }
-    @keyframes blink {
-      50% { opacity: 0; }
-    }
-    .terminal::-webkit-scrollbar {
-      width: 10px;
-      background: #23252b;
-    }
-    .terminal::-webkit-scrollbar-thumb {
-      background: #343942;
-      border-radius: 7px;
-    }
-    @media (max-width: 750px) {
-      .window { min-width: 99vw; }
-      .terminal { font-size: 0.91em; }
-    }
-    ::selection {
-      background: #1976d2;
-      color: #fff;
+    @media (max-width: 600px) {
+      #truth-container {
+        font-size: 0.95em;
+        padding: 1em;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="window">
-    <div class="titlebar">
-      <div class="window-btns">
-        <div class="window-btn red"></div>
-        <div class="window-btn yellow"></div>
-        <div class="window-btn green"></div>
-      </div>
-      <span class="title">root@kali: ~</span>
-    </div>
-    <div class="terminal" id="terminal" tabindex="0" spellcheck="false"></div>
-  </div>
-  <script>
-    // Simulated file system for realistic 'ls' and 'cd'
-    const fileSystem = {
-      "/": ["home", "root", "etc", "usr", "bin", "var", "tmp"],
-      "/root": ["Desktop", "Documents", "Downloads", "Music", "Pictures", "Public", "Templates", "Videos"],
-      "/root/Desktop": [],
-      "/home": ["kali"],
-      "/home/kali": ["Desktop", "Documents", "Downloads"],
-      "/home/kali/Desktop": [],
-      "/etc": [],
-      "/usr": [],
-      "/bin": [],
-      "/var": [],
-      "/tmp": [],
-    };
-    let currentPath = "/root";
-    let history = [];
-    let histPos = 0;
+<canvas id="matrix-canvas"></canvas>
+<div id="truth-container">
+Epstein died while Trump was in office. Who stood to gain the most from his death? According to FAA flight logs, Trump flew on Epstein’s private jet at least seven times. In a 2002 New York Magazine interview, Trump said: “I’ve known Jeff for fifteen years. Terrific guy. It is even said that he likes beautiful women as much as I do, and many of them are on the younger side.”<br><br>
+At the time, both men lived in Palm Beach, less than a 10-minute drive from each other. They attended the same social events, and Epstein was a regular at Mar-a-Lago.<br><br>
+In 1994, a woman named Katie Johnson filed a federal lawsuit (case 1:16-cv-07673) alleging that both Epstein and Trump raped her when she was 13 years old at Epstein’s Manhattan home. The suit included sworn affidavits and was dropped just before the 2016 election, reportedly due to death threats. To verify: search “Katie Johnson Trump Epstein lawsuit.”<br><br>
+Michael Wolff, journalist and author, recorded over 100 hours of interviews with Epstein. According to Wolff, Epstein described Trump as one of his “closest friends.” Trump operated the Miss USA and Miss Teen USA pageants for years. Multiple former contestants have gone on record stating that Trump walked into dressing rooms while they were changing, some as young as 15. Trump confirmed this in a 2005 Howard Stern interview.<br><br>
+Virginia Giuffre, one of Epstein’s primary accusers, stated she was recruited by Ghislaine Maxwell at Mar-a-Lago while working there at age 16. Maxwell, later convicted of trafficking minors, was photographed at multiple events with Trump and Melania. When Maxwell was arrested in 2020, Trump publicly said: “I wish her well.”<br><br>
+Trump’s inner circle included Alan Dershowitz, another Epstein associate who has been accused by Giuffre and served on Trump’s legal team during his first impeachment. Then there’s the Epstein plea deal in 2008, secretly arranged by U.S. Attorney Alexander Acosta—who later became Trump’s Labor Secretary and resigned under pressure in 2019 when the deal became public.<br><br>
+Finally, in 2024, Trump’s campaign used Epstein’s former Gulfstream G550 jet for travel—a fact confirmed by aviation records and campaign filings.
+</div>
+<script>
+// Matrix falling code
+const canvas = document.getElementById('matrix-canvas');
+const ctx = canvas.getContext('2d');
 
-    const terminal = document.getElementById('terminal');
-    const promptTemplate = (cwd) =>
-      `<span class="prompt"><span class="user">root</span>@<span class="host">kali</span>:<span class="path">${cwd.replace("/root", "~")}</span>#</span>`;
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
 
-    // Banner (matches Kali fresh login)
-    const banner = [
-      "┌──(root㉿kali)-[~]",
-      "└─# Welcome to Kali Linux. Type 'help' to get started.",
-      ""
-    ];
+// Characters: binary + some matrix symbols
+const matrixChars = '01ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹｴｶｷﾕﾗﾁﾖﾇﾍ'.split('');
+const fontSize = 20;
+let columns = Math.floor(window.innerWidth / fontSize);
+let drops = Array(columns).fill(1);
 
-    function addBanner() {
-      for (const line of banner) {
-        const div = document.createElement('div');
-        div.textContent = line;
-        terminal.appendChild(div);
-      }
-    }
+function drawMatrix() {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    function scrollToBottom() {
-      terminal.scrollTop = terminal.scrollHeight;
-    }
+  ctx.font = fontSize + "px monospace";
+  for(let i = 0; i < drops.length; i++) {
+    const text = matrixChars[Math.floor(Math.random()*matrixChars.length)];
+    ctx.fillStyle = Math.random() > 0.95 ? "#fff" : "#0F0";
+    ctx.fillText(text, i*fontSize, drops[i]*fontSize);
 
-    function addPrompt(inputVal = "") {
-      const line = document.createElement('div');
-      line.className = 'prompt-line';
-      line.innerHTML = promptTemplate(currentPath) +
-        `<input class="input" id="input-line" autocomplete="off" autofocus />` +
-        `<span class="blinker" id="blinker"></span>`;
-      terminal.appendChild(line);
-      const inp = line.querySelector('.input');
-      inp.value = inputVal;
-      inp.focus();
-      scrollToBottom();
-      inp.addEventListener('input', scrollToBottom);
-    }
+    if(drops[i]*fontSize > canvas.height && Math.random() > 0.975)
+      drops[i] = 0;
 
-    function addOutput(text) {
-      if (text === "") return;
-      const out = document.createElement('div');
-      out.className = 'output';
-      out.textContent = text;
-      terminal.appendChild(out);
-      scrollToBottom();
-    }
+    drops[i]++;
+  }
+}
 
-    function runCommand(cmd) {
-      let out = "";
-      let trimmed = cmd.trim();
-      // Simulate commands
-      if (trimmed === "ls") {
-        out = (fileSystem[currentPath] || []).join("  ");
-      } else if (trimmed.startsWith("cd")) {
-        let [, path] = trimmed.split(" ");
-        if (!path || path === "~") path = "/root";
-        else if (path === "..") {
-          if (currentPath !== "/" && currentPath !== "/root") {
-            currentPath = currentPath.replace(/\/[^\/]+$/, "") || "/";
-          } else if (currentPath === "/root") {
-            currentPath = "/";
-          }
-        } else if (path.startsWith("/")) {
-          if (fileSystem[path]) currentPath = path;
-          else out = `bash: cd: ${path}: No such file or directory`;
-        } else if (fileSystem[currentPath + "/" + path]) {
-          currentPath += "/" + path;
-        } else if (fileSystem["/root/" + path] && currentPath === "/root") {
-          currentPath = "/root/" + path;
-        } else if (fileSystem["/" + path] && currentPath === "/") {
-          currentPath = "/" + path;
-        } else {
-          out = `bash: cd: ${path}: No such file or directory`;
-        }
-      } else if (trimmed === "pwd") {
-        out = currentPath;
-      } else if (trimmed === "whoami") {
-        out = "root";
-      } else if (trimmed === "uname" || trimmed === "uname -a") {
-        out = "Linux kali 6.3.0-kali1-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.3.7-1kali1 (2024-06-01) x86_64 GNU/Linux";
-      } else if (trimmed === "clear") {
-        terminal.innerHTML = '';
-        addBanner();
-        return;
-      } else if (trimmed === "help") {
-        out = [
-          "Available commands: ls, cd, pwd, whoami, uname, clear, echo, help, exit",
-          "Directory navigation is simulated."
-        ].join("\n");
-      } else if (trimmed.startsWith("echo ")) {
-        out = trimmed.slice(5);
-      } else if (trimmed === "exit") {
-        out = "logout";
-        setTimeout(() => window.location.reload(), 800);
-      } else if (trimmed === "") {
-        out = "";
-      } else {
-        out = `bash: ${trimmed.split(" ")[0]}: command not found`;
-      }
-      addOutput(out);
-    }
-
-    function handleInput(e) {
-      const inp = document.getElementById('input-line');
-      if (!inp) return;
-      if (e.key === 'Enter') {
-        inp.parentNode.innerHTML = promptTemplate(currentPath) + " " + inp.value;
-        history.push(inp.value);
-        histPos = history.length;
-        runCommand(inp.value);
-        addPrompt();
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        if (histPos > 0) {
-          histPos--;
-          inp.value = history[histPos];
-        }
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        if (histPos < history.length - 1) {
-          histPos++;
-          inp.value = history[histPos];
-        } else {
-          histPos = history.length;
-          inp.value = '';
-        }
-      }
-      scrollToBottom();
-    }
-
-    terminal.addEventListener('mousedown', () => {
-      const inp = document.getElementById('input-line');
-      if (inp) inp.focus();
-    });
-
-    terminal.addEventListener('keydown', handleInput);
-
-    terminal.addEventListener('focusout', () => {
-      setTimeout(() => {
-        const inp = document.getElementById('input-line');
-        if (inp) inp.focus();
-      }, 10);
-    });
-
-    // Initial render
-    addBanner();
-    addPrompt();
-    setTimeout(() => {
-      const inp = document.getElementById('input-line');
-      if (inp) inp.focus();
-    }, 120);
-  </script>
+setInterval(drawMatrix, 50);
+window.addEventListener('resize', () => {
+  columns = Math.floor(window.innerWidth / fontSize);
+  drops = Array(columns).fill(1);
+});
+</script>
 </body>
 </html>
