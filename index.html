@@ -2,6 +2,162 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <title>SIGIL-47 // ACCESS CONSOLE</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: black;
+      color: #00ff00;
+      font-family: 'Courier New', Courier, monospace;
+      text-shadow: 0 0 5px #00ff00;
+    }
+
+    .logo {
+      white-space: pre;
+      text-align: center;
+      font-size: 12px;
+      line-height: 14px;
+      padding: 30px 0;
+      color: #00ff00;
+    }
+
+    .glitch {
+      animation: glitch 0.2s infinite;
+    }
+
+    @keyframes glitch {
+      0%   { text-shadow: 2px 0 red, -2px 0 blue; }
+      50%  { text-shadow: -1px 0 magenta, 1px 0 cyan; }
+      100% { text-shadow: 2px 0 red, -2px 0 blue; }
+    }
+
+    .terminal {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 2px solid #00ff00;
+      box-shadow: 0 0 20px #00ff00;
+      background-color: #000000;
+    }
+
+    .terminal-output {
+      min-height: 200px;
+      padding: 10px 0;
+    }
+
+    .input-line {
+      display: flex;
+      align-items: center;
+    }
+
+    .input-line span {
+      margin-right: 10px;
+    }
+
+    input[type="text"] {
+      background-color: black;
+      color: #00ff00;
+      border: none;
+      border-bottom: 1px solid #00ff00;
+      flex-grow: 1;
+      font-size: 1em;
+      font-family: inherit;
+      padding: 5px;
+      outline: none;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.9em;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo glitch">
+<pre>
+  _________ ________  ________  ___       ___       ___  ________     
+ |\___   ___\\   __  \|\   __  \|\  \     |\  \     |\  \|\   ___ \    
+ \|___ \  \_\ \  \|\  \ \  \|\  \ \  \    \ \  \    \ \  \ \  \_|\ \   
+      \ \  \ \ \  \\\  \ \   __  \ \  \    \ \  \  __\ \  \ \  \ \\ \  
+       \ \  \ \ \  \\\  \ \  \ \  \ \  \____\ \  \|\__\_\  \ \  \_\\ \ 
+        \ \__\ \ \_______\ \__\ \__\ \_______\ \____________\ \_______\
+         \|__|  \|_______|\|__|\|__|\|_______|\|____________|\|_______|
+     ________  ________  ___  ___  ___  ___       ________  ________      
+    |\   __  \|\   __  \|\  \|\  \|\  \|\  \     |\   __  \|\   __  \     
+    \ \  \|\  \ \  \|\  \ \  \\\  \ \  \\\  \    \ \  \|\  \ \  \|\  \    
+     \ \   __  \ \  \\\  \ \   __  \ \  \\\  \    \ \  \\\  \ \  \\\  \   
+      \ \  \ \  \ \  \\\  \ \  \ \  \ \  \\\  \____\ \  \\\  \ \  \\\  \  
+       \ \__\ \__\ \_______\ \__\ \__\ \_______\____\ \_______\ \_______\
+        \|__|\|__|\|_______|\|__|\|__|\|_______|\|__|\|_______|\|_______|
+</pre>
+  </div>
+
+  <div class="terminal">
+    <p>> WELCOME TO <strong>SIGIL-47</strong> TERMINAL</p>
+    <p>> "Symbolism meets encryption. A sigil for a new kind of power."</p>
+    <p>> "We aren’t hidden. We’re forgotten on purpose."</p>
+    <div class="terminal-output" id="output">
+      <p>> SYSTEM ONLINE...</p>
+      <p>> AWAITING COMMAND...</p>
+    </div>
+    <div class="input-line">
+      <span>>></span>
+      <input type="text" id="command" placeholder="Enter command and press Enter" onkeydown="handleCommand(event)">
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>SIGIL-47 Terminal v1.0 // Developed by roket2980</p>
+  </div>
+
+  <script>
+    const output = document.getElementById('output');
+
+    const commands = {
+      help: "Available commands: help, sigil, motto, clear, about, greet, encrypt, decrypt, whoami, glitch",
+      sigil: "SIGIL-47: A group of ghost operatives creating artifacts of encrypted rebellion.",
+      motto: "\"We aren’t hidden. We’re forgotten on purpose.\"",
+      about: "SIGIL-47 is a decentralized hacker syndicate focused on digital liberation.",
+      greet: "Hello, Operative. Welcome back to the fold.",
+      encrypt: "Encryption module not yet implemented. Try imagining your secrets wrapped in serpents.",
+      decrypt: "Nice try. Not everything is meant to be understood.",
+      whoami: "You are roket2980. Founder. Cipher-bearer. Node-zero.",
+      glitch: "!!@@#%&@* GLITCH DETECTED IN SECTOR-47_∆∆∆"
+    };
+
+    function handleCommand(event) {
+      if (event.key === 'Enter') {
+        const input = event.target.value.trim().toLowerCase();
+        appendLine(">> " + input);
+        if (input === "clear") {
+          output.innerHTML = "";
+        } else if (commands[input]) {
+          appendLine("=> " + commands[input]);
+        } else {
+          appendLine("=> Command not recognized. Type 'help'.");
+        }
+        event.target.value = "";
+      }
+    }
+
+    function appendLine(text) {
+      const p = document.createElement("p");
+      p.textContent = text;
+      output.appendChild(p);
+      output.scrollTop = output.scrollHeight;
+    }
+  </script>
+
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
   <title>The Truth - Matrix Reveal</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
