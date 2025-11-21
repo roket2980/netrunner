@@ -19,6 +19,7 @@
       --buy-green-1:#22c55e;
       --buy-green-2:#16a34a;
       --badge-bg:#f0f6ff;
+      --cost-text: #000; /* cost text: black in light mode */
       --danger:#e74c3c;
       --shadow: 0 6px 30px rgba(40,40,60,0.08);
       --glass-border: 1px solid #f0f0ff;
@@ -40,6 +41,7 @@
       --buy-green-1:#ff8a33;     /* orange-style buy */
       --buy-green-2:#ff6a00;
       --badge-bg:#201106;
+      --cost-text: #fff; /* cost text: white in dark mode */
       --danger:#ff4b4b;
       --shadow: 0 8px 30px rgba(0,0,0,0.6);
       --glass-border: 1px solid rgba(255,255,255,0.04);
@@ -101,7 +103,8 @@
     .item .meta{font-size:0.9rem;color:var(--muted)}
     .small{font-size:0.85rem;color:var(--muted)}
     .progress-row{display:flex;justify-content:space-between;width:100%;max-width:880px;color:var(--muted);font-size:0.9rem;margin-top:6px;gap:10px;flex-wrap:wrap}
-    .badge{background:var(--badge-bg);border-radius:8px;padding:4px 8px;color:var(--accent-contrast);font-weight:600}
+    .badge{background:var(--badge-bg);border-radius:8px;padding:4px 8px;color:var(--cost-text);font-weight:600}
+    /* ensure buy buttons still readable */
     button.buy{background:linear-gradient(180deg,var(--buy-green-1),var(--buy-green-2));color:var(--accent-contrast);border:none;padding:8px 10px;border-radius:8px;cursor:pointer}
     button.buy:disabled{opacity:0.45;cursor:not-allowed}
     footer{margin-top:12px;font-size:0.85rem;color:var(--muted)}
