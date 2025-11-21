@@ -177,7 +177,7 @@
   </main>
 
   <script>
-  // Single-file clicker with dark mode and fixes for high-tier items.
+  // Single-file clicker with dark mode and additional upgrades/autoclickers.
   (function () {
     // ----- Config -----
     const SAVE_KEY = 'clicker.save.v1';
@@ -193,28 +193,46 @@
       updatedAt: Date.now()
     };
 
+    // Existing 4 upgrades + 5 new ones = 9 total
     const UPGRADE_DEFS = [
       { id: 'uc1', name: 'Copper Button', baseCost: 25, perClickIncrease: 1, unlockAt: 0 },
       { id: 'uc2', name: 'Steel Button', baseCost: 150, perClickIncrease: 5, unlockAt: 50 },
       { id: 'uc3', name: 'Gold Button', baseCost: 1000, perClickIncrease: 25, unlockAt: 500 },
       { id: 'uc4', name: 'Platinum Button', baseCost: 8000, perClickIncrease: 150, unlockAt: 3000 },
+
+      // 5 new upgrades
+      { id: 'uc5', name: 'Titanium Button', baseCost: 45000, perClickIncrease: 800, unlockAt: 10000 },
+      { id: 'uc6', name: 'Diamond Button', baseCost: 300000, perClickIncrease: 5000, unlockAt: 50000 },
+      { id: 'uc7', name: 'Mythic Button', baseCost: 2000000, perClickIncrease: 25000, unlockAt: 200000 },
+      { id: 'uc8', name: 'Legendary Button', baseCost: 15000000, perClickIncrease: 150000, unlockAt: 1000000 },
+      { id: 'uc9', name: 'Ethereal Button', baseCost: 120000000, perClickIncrease: 1000000, unlockAt: 5000000 }
     ];
 
+    // Existing 4 autoclickers + 5 new ones = 9 total
     const AUTOCLICKER_DEFS = [
       { id: 'ac1', name: 'Helper Bot', baseCost: 100, cps: 1, unlockAt: 10 },
       { id: 'ac2', name: 'Auto-Worker', baseCost: 800, cps: 10, unlockAt: 200 },
       { id: 'ac3', name: 'Factory', baseCost: 7000, cps: 100, unlockAt: 2000 },
       { id: 'ac4', name: 'Quantum Farm', baseCost: 60000, cps: 1000, unlockAt: 15000 },
+
+      // 5 new autoclickers
+      { id: 'ac5', name: 'Assembly Line', baseCost: 450000, cps: 8000, unlockAt: 50000 },
+      { id: 'ac6', name: 'Automated City', baseCost: 3200000, cps: 60000, unlockAt: 250000 },
+      { id: 'ac7', name: 'Orbital Factory', baseCost: 22000000, cps: 450000, unlockAt: 1000000 },
+      { id: 'ac8', name: 'Planetary Foundry', baseCost: 180000000, cps: 3500000, unlockAt: 5000000 },
+      { id: 'ac9', name: 'Singularity Core', baseCost: 1500000000, cps: 30000000, unlockAt: 20000000 }
     ];
 
     // cost scaling (exponential)
     function calcCost(baseCost, owned) {
+      // Use float math but keep integer result
       return Math.max(1, Math.floor(baseCost * Math.pow(1.15, owned)));
     }
 
     // formatting
     function fmt(n) {
       if (!isFinite(n)) return '0';
+      if (n >= 1e15) return (n / 1e15).toFixed(2) + 'Qa';
       if (n >= 1e12) return (n / 1e12).toFixed(2) + 'T';
       if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
       if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
@@ -273,11 +291,8 @@
     const importPasteBtn = $('import-paste');
     const resetBtn = $('reset-save');
 
-    // ----- Unlock logic fix -----
-    // Previously items were gated strictly by totalClicks; some players expected to unlock by points as well.
-    // Now an item is considered unlocked when either:
-    // - totalClicks >= unlockAt, OR
-    // - the player already has enough points to afford its base cost.
+    // ----- Unlock logic -----
+    // An item is unlocked if totalClicks >= unlockAt OR player currently has enough points to afford its base cost.
     function isUnlocked(def) {
       try {
         return (state.totalClicks >= (def.unlockAt || 0)) || (state.points >= (def.baseCost || 0));
@@ -306,7 +321,7 @@
         item.innerHTML = `
           <div>
             <div><strong>${def.name}</strong> <span class="small">x${owned}</span></div>
-            <div class="meta small">${def.perClickIncrease} per click</div>
+            <div class="meta small">${def.perClickIncrease.toLocaleString()} per click</div>
           </div>
           <div style="text-align:right">
             <div class="meta small">Cost: <span class="badge">${fmt(cost)}</span></div>
@@ -335,7 +350,7 @@
         item.innerHTML = `
           <div>
             <div><strong>${def.name}</strong> <span class="small">x${owned}</span></div>
-            <div class="meta small">${def.cps} CPS each</div>
+            <div class="meta small">${def.cps.toLocaleString()} CPS each</div>
           </div>
           <div style="text-align:right">
             <div class="meta small">Cost: <span class="badge">${fmt(cost)}</span></div>
@@ -415,7 +430,7 @@
         const raw = localStorage.getItem(SAVE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          // ensure numeric fields exist
+          // ensure numeric fields exist and convert strings -> numbers
           parsed.points = Number(parsed.points) || 0;
           parsed.totalClicks = Number(parsed.totalClicks) || 0;
           parsed.perClick = Number(parsed.perClick) || 1;
@@ -473,6 +488,13 @@
       try {
         const parsed = JSON.parse(text);
         if (typeof parsed.points !== 'number') throw new Error('Invalid save format');
+        // Normalize then accept
+        parsed.points = Number(parsed.points) || 0;
+        parsed.totalClicks = Number(parsed.totalClicks) || 0;
+        parsed.perClick = Number(parsed.perClick) || 1;
+        parsed.cps = Number(parsed.cps) || 0;
+        parsed.upgrades = parsed.upgrades || {};
+        parsed.autoclickers = parsed.autoclickers || {};
         state = Object.assign({}, DEFAULT_STATE, parsed);
         saveState();
         renderAll();
