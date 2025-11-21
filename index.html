@@ -5,32 +5,67 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Clicker — All-in-One (single HTML)</title>
   <style>
+    /* Theme variables (light default) */
     :root{
-      --bg:#f6f7fb;
+      --bg-gradient: linear-gradient(180deg,#eef2ff, #f6f7fb);
+      --bg-solid: #f6f7fb;
       --card:#ffffff;
-      --accent:#2b6ef6;
+      --card-2:#fbfbff;
+      --text:#222;
       --muted:#666;
+      --accent:#2b6ef6;
+      --accent-dark:#185be0;
+      --accent-contrast:#fff;
+      --buy-green-1:#22c55e;
+      --buy-green-2:#16a34a;
+      --badge-bg:#f0f6ff;
       --danger:#e74c3c;
+      --shadow: 0 6px 30px rgba(40,40,60,0.08);
+      --glass-border: 1px solid #f0f0ff;
+      --container-padding:20px;
+      transition: background-color 220ms ease, color 220ms ease;
     }
+
+    /* Dark theme: black + orange secondaries */
+    :root[data-theme="dark"] {
+      --bg-gradient: linear-gradient(180deg,#000000,#0b0b0b);
+      --bg-solid: #000000;
+      --card:#0f0f10;
+      --card-2:#111114;
+      --text:#e6e6e6;
+      --muted:#bdbdbd;
+      --accent:#ff7a00;          /* orange primary accent */
+      --accent-dark:#cc5f00;     /* darker orange */
+      --accent-contrast:#000000; /* text on accent */
+      --buy-green-1:#ff8a33;     /* orange-style buy */
+      --buy-green-2:#ff6a00;
+      --badge-bg:#201106;
+      --danger:#ff4b4b;
+      --shadow: 0 8px 30px rgba(0,0,0,0.6);
+      --glass-border: 1px solid rgba(255,255,255,0.04);
+    }
+
     *{box-sizing:border-box}
     body{
       margin:0;
       font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      background:linear-gradient(180deg,#eef2ff, #f6f7fb);
-      color:#222;
+      background: var(--bg-gradient);
+      color: var(--text);
       min-height:100vh;
       display:flex;
       align-items:center;
       justify-content:center;
       padding:20px;
+      transition: background 220ms ease, color 220ms ease;
     }
     .container{
       width:980px;
       max-width:98%;
       background:var(--card);
-      padding:20px;
+      padding:var(--container-padding);
       border-radius:12px;
-      box-shadow:0 6px 30px rgba(40,40,60,0.08);
+      box-shadow:var(--shadow);
+      transition: background 220ms ease, box-shadow 220ms ease;
     }
     header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap}
     header h1{margin:0;font-size:1.5rem}
@@ -41,36 +76,60 @@
       height:130px;
       border-radius:14px;
       border:none;
-      background:linear-gradient(180deg,var(--accent),#185be0);
-      color:white;
+      background: linear-gradient(180deg, var(--accent), var(--accent-dark));
+      color: var(--accent-contrast);
       font-size:2.4rem;
-      box-shadow:0 8px 20px rgba(43,110,246,0.26);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.18);
       cursor:pointer;
       user-select:none;
+      transition: transform 80ms ease, box-shadow 150ms ease;
     }
     .big-button:active{transform:translateY(1px)}
     .controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-    .secondary{padding:8px 12px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer}
+    .secondary{
+      padding:8px 12px;border-radius:8px;border:var(--glass-border);
+      background:var(--card-2);cursor:pointer;color:var(--text);
+      transition: background 160ms ease, color 160ms ease, border 160ms ease;
+    }
+    .secondary:active { transform: translateY(1px); }
     .danger{padding:8px 12px;border-radius:8px;border:1px solid #e0b4b4;background:var(--danger);color:#fff;cursor:pointer}
     .panels{display:flex;gap:12px;flex-wrap:wrap}
-    .panel{flex:1;min-width:260px;background:#fbfbff;border:1px solid #f0f0ff;padding:12px;border-radius:10px}
+    .panel{flex:1;min-width:260px;background:var(--card-2);border:var(--glass-border);padding:12px;border-radius:10px}
     .panel h3{margin-top:0}
-    .item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;margin-bottom:8px;background:#fff;border:1px solid #eee}
+    .item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;margin-bottom:8px;background:var(--card);border:1px solid rgba(0,0,0,0.04)}
     .item .meta{font-size:0.9rem;color:var(--muted)}
     .small{font-size:0.85rem;color:var(--muted)}
     .progress-row{display:flex;justify-content:space-between;width:100%;max-width:880px;color:var(--muted);font-size:0.9rem;margin-top:6px;gap:10px;flex-wrap:wrap}
-    .badge{background:#f0f6ff;border-radius:8px;padding:4px 8px;color:#1b4bd8;font-weight:600}
-    button.buy{background:linear-gradient(180deg,#22c55e,#16a34a);color:#fff;border:none;padding:8px 10px;border-radius:8px;cursor:pointer}
-    button.buy:disabled{opacity:0.5;cursor:not-allowed}
+    .badge{background:var(--badge-bg);border-radius:8px;padding:4px 8px;color:var(--accent-contrast);font-weight:600}
+    button.buy{background:linear-gradient(180deg,var(--buy-green-1),var(--buy-green-2));color:var(--accent-contrast);border:none;padding:8px 10px;border-radius:8px;cursor:pointer}
+    button.buy:disabled{opacity:0.45;cursor:not-allowed}
     footer{margin-top:12px;font-size:0.85rem;color:var(--muted)}
     .controls input[type=file]{display:none}
     .hint{font-size:0.85rem;color:var(--muted);margin-top:6px}
+    /* theme toggle button */
+    .theme-toggle{
+      padding:6px 10px;border-radius:8px;border:var(--glass-border);background:transparent;color:var(--muted);cursor:pointer;
+      display:inline-flex;align-items:center;gap:8px;
+    }
+    .theme-toggle .dot{width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+    /* small responsive */
+    @media (max-width:640px){
+      .stats{font-size:0.85rem}
+      .big-button{height:110px;font-size:2rem}
+    }
   </style>
 </head>
 <body>
   <main class="container" role="main">
     <header>
-      <h1>Clicker</h1>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <h1>Clicker</h1>
+        <button id="theme-toggle" class="theme-toggle" title="Toggle theme" aria-pressed="false">
+          <span class="dot" aria-hidden="true"></span>
+          <span id="theme-label" style="font-size:0.95rem;color:var(--muted)">Light</span>
+        </button>
+      </div>
+
       <div class="stats" aria-live="polite">
         <div>Points: <strong id="points">0</strong></div>
         <div>Per Click: <strong id="per-click">1</strong></div>
@@ -121,13 +180,14 @@
   (function () {
     // ----- Config -----
     const SAVE_KEY = 'clicker.save.v1';
+    const THEME_KEY = 'clicker.theme'; // 'light' or 'dark' or 'system'
     const DEFAULT_STATE = {
       points: 0,
       totalClicks: 0,
       perClick: 1,
       cps: 0,
-      upgrades: {},      // id -> owned
-      autoclickers: {},  // id -> owned
+      upgrades: {},
+      autoclickers: {},
       createdAt: Date.now(),
       updatedAt: Date.now()
     };
@@ -157,6 +217,44 @@
       if (n >= 1e3) return (n / 1e3).toFixed(2) + 'K';
       return Math.floor(n).toLocaleString();
     }
+
+    // ----- Theme handling -----
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const themeLabel = document.getElementById('theme-label');
+
+    function applyTheme(theme) {
+      // theme: 'light' or 'dark'
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeToggleBtn.setAttribute('aria-pressed', 'true');
+        themeLabel.textContent = 'Dark';
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        themeToggleBtn.setAttribute('aria-pressed', 'false');
+        themeLabel.textContent = 'Light';
+      }
+      // save
+      try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+    }
+
+    function getPreferredTheme() {
+      try {
+        const saved = localStorage.getItem(THEME_KEY);
+        if (saved === 'dark' || saved === 'light') return saved;
+      } catch (e) {}
+      // fallback to OS preference
+      const mq = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+      return mq && mq.matches ? 'dark' : 'light';
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    });
+
+    // apply theme early
+    applyTheme(getPreferredTheme());
 
     // ----- State -----
     let state = loadState();
@@ -293,7 +391,7 @@
         state.points += state.cps * dt;
       }
       // occasional save
-      if (now % 5000 < 50) saveStateDebounced(); // best-effort
+      if (now % 5000 < 50) saveStateDebounced();
       renderHeader();
       window.requestAnimationFrame(tick);
     }
@@ -305,7 +403,6 @@
         const raw = localStorage.getItem(SAVE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          // Basic migration: ensure required fields exist
           return Object.assign({}, DEFAULT_STATE, parsed);
         }
       } catch (e) {
@@ -401,20 +498,17 @@
     });
     resetBtn.addEventListener('click', () => resetState(true));
 
-    // Quick buy "best auto" button (buys the cheapest unlocked auto-clicker you can afford)
+    // Quick buy "best auto" button
     const autoQuickBtn = $('auto-clicker-btn');
     autoQuickBtn.addEventListener('click', () => {
-      // find unlocked and affordable autoclickers, choose one with highest cps/cost ratio
       const candidates = AUTOCLICKER_DEFS
         .filter(d => state.totalClicks >= d.unlockAt)
         .map(d => ({ def: d, owned: state.autoclickers[d.id] || 0 }))
         .map(o => ({ def: o.def, cost: calcCost(o.def.baseCost, o.owned), owned: o.owned }))
         .filter(o => o.cost <= state.points);
       if (candidates.length === 0) return alert('No affordable auto-clickers right now.');
-      // prefer highest cps per cost
       candidates.sort((a, b) => (b.def.cps / b.cost) - (a.def.cps / a.cost));
       const best = candidates[0];
-      // buy one
       state.points -= best.cost;
       state.autoclickers[best.def.id] = (state.autoclickers[best.def.id] || 0) + 1;
       state.cps += best.def.cps;
