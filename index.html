@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Clicker — All-in-One (single HTML)</title>
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --accent:#2b6ef6;
+      --muted:#666;
+      --danger:#e74c3c;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:linear-gradient(180deg,#eef2ff, #f6f7fb);
+      color:#222;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+    .container{
+      width:980px;
+      max-width:98%;
+      background:var(--card);
+      padding:20px;
+      border-radius:12px;
+      box-shadow:0 6px 30px rgba(40,40,60,0.08);
+    }
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;flex-wrap:wrap}
+    header h1{margin:0;font-size:1.5rem}
+    .stats{display:flex;gap:16px;font-size:0.95rem;color:var(--muted);align-items:center;flex-wrap:wrap}
+    .play{display:flex;flex-direction:column;align-items:center;gap:12px;margin:18px 0}
+    .big-button{
+      width:360px;max-width:92%;
+      height:130px;
+      border-radius:14px;
+      border:none;
+      background:linear-gradient(180deg,var(--accent),#185be0);
+      color:white;
+      font-size:2.4rem;
+      box-shadow:0 8px 20px rgba(43,110,246,0.26);
+      cursor:pointer;
+      user-select:none;
+    }
+    .big-button:active{transform:translateY(1px)}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+    .secondary{padding:8px 12px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer}
+    .danger{padding:8px 12px;border-radius:8px;border:1px solid #e0b4b4;background:var(--danger);color:#fff;cursor:pointer}
+    .panels{display:flex;gap:12px;flex-wrap:wrap}
+    .panel{flex:1;min-width:260px;background:#fbfbff;border:1px solid #f0f0ff;padding:12px;border-radius:10px}
+    .panel h3{margin-top:0}
+    .item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;margin-bottom:8px;background:#fff;border:1px solid #eee}
+    .item .meta{font-size:0.9rem;color:var(--muted)}
+    .small{font-size:0.85rem;color:var(--muted)}
+    .progress-row{display:flex;justify-content:space-between;width:100%;max-width:880px;color:var(--muted);font-size:0.9rem;margin-top:6px;gap:10px;flex-wrap:wrap}
+    .badge{background:#f0f6ff;border-radius:8px;padding:4px 8px;color:#1b4bd8;font-weight:600}
+    button.buy{background:linear-gradient(180deg,#22c55e,#16a34a);color:#fff;border:none;padding:8px 10px;border-radius:8px;cursor:pointer}
+    button.buy:disabled{opacity:0.5;cursor:not-allowed}
+    footer{margin-top:12px;font-size:0.85rem;color:var(--muted)}
+    .controls input[type=file]{display:none}
+    .hint{font-size:0.85rem;color:var(--muted);margin-top:6px}
+  </style>
+</head>
+<body>
+  <main class="container" role="main">
+    <header>
+      <h1>Clicker</h1>
+      <div class="stats" aria-live="polite">
+        <div>Points: <strong id="points">0</strong></div>
+        <div>Per Click: <strong id="per-click">1</strong></div>
+        <div>Passive CPS: <strong id="cps">0</strong></div>
+      </div>
+    </header>
+
+    <section class="play" aria-label="Play area">
+      <button id="big-btn" class="big-button" aria-label="Big click button">CLICK</button>
+
+      <div class="controls" role="group" aria-label="Controls">
+        <button id="auto-clicker-btn" class="secondary">Buy Best Auto</button>
+        <button id="export-save" class="secondary">Export Save</button>
+        <label class="secondary" title="Import save file (JSON)">
+          Import Save
+          <input id="import-file" type="file" accept="application/json" />
+        </label>
+        <button id="import-paste" class="secondary" title="Paste save JSON">Paste Import</button>
+        <button id="reset-save" class="danger">Reset</button>
+      </div>
+
+      <div class="progress-row">
+        <div>Total Clicks: <span id="total-clicks">0</span></div>
+        <div>Points/sec: <span id="cps-display">0</span></div>
+      </div>
+      <div class="hint">Tip: Press <strong>Space</strong> to click. Save auto-saves every few seconds.</div>
+    </section>
+
+    <section class="panels" aria-label="Shop and producers">
+      <div class="panel" aria-labelledby="upgrades-title">
+        <h3 id="upgrades-title">Upgrades (increase per-click)</h3>
+        <div id="upgrades-list" role="list"></div>
+      </div>
+
+      <div class="panel" aria-labelledby="autoclickers-title">
+        <h3 id="autoclickers-title">Auto-Clickers (passive CPS)</h3>
+        <div id="autoclickers-list" role="list"></div>
+      </div>
+    </section>
+
+    <footer>
+      <small>Save stored in localStorage (key: <code>clicker.save.v1</code>). You can export a JSON backup and import it later.</small>
+    </footer>
+  </main>
+
+  <script>
+  // All-in-one clicker app (single HTML). Saves progress to localStorage.
+  (function () {
+    // ----- Config -----
+    const SAVE_KEY = 'clicker.save.v1';
+    const DEFAULT_STATE = {
+      points: 0,
+      totalClicks: 0,
+      perClick: 1,
+      cps: 0,
+      upgrades: {},      // id -> owned
+      autoclickers: {},  // id -> owned
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+
+    const UPGRADE_DEFS = [
+      { id: 'uc1', name: 'Copper Button', baseCost: 25, perClickIncrease: 1, unlockAt: 0 },
+      { id: 'uc2', name: 'Steel Button', baseCost: 150, perClickIncrease: 5, unlockAt: 50 },
+      { id: 'uc3', name: 'Gold Button', baseCost: 1000, perClickIncrease: 25, unlockAt: 500 },
+      { id: 'uc4', name: 'Platinum Button', baseCost: 8000, perClickIncrease: 150, unlockAt: 3000 },
+    ];
+
+    const AUTOCLICKER_DEFS = [
+      { id: 'ac1', name: 'Helper Bot', baseCost: 100, cps: 1, unlockAt: 10 },
+      { id: 'ac2', name: 'Auto-Worker', baseCost: 800, cps: 10, unlockAt: 200 },
+      { id: 'ac3', name: 'Factory', baseCost: 7000, cps: 100, unlockAt: 2000 },
+      { id: 'ac4', name: 'Quantum Farm', baseCost: 60000, cps: 1000, unlockAt: 15000 },
+    ];
+
+    function calcCost(baseCost, owned) {
+      return Math.max(1, Math.floor(baseCost * Math.pow(1.15, owned)));
+    }
+
+    function fmt(n) {
+      if (n >= 1e12) return (n / 1e12).toFixed(2) + 'T';
+      if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+      if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+      if (n >= 1e3) return (n / 1e3).toFixed(2) + 'K';
+      return Math.floor(n).toLocaleString();
+    }
+
+    // ----- State -----
+    let state = loadState();
+
+    // ----- Elements -----
+    const $ = id => document.getElementById(id);
+    const pointsEl = $('points');
+    const perClickEl = $('per-click');
+    const cpsEl = $('cps');
+    const bigBtn = $('big-btn');
+    const upgradesList = $('upgrades-list');
+    const autoclickersList = $('autoclickers-list');
+    const totalClicksEl = $('total-clicks');
+    const cpsDisplay = $('cps-display');
+    const exportBtn = $('export-save');
+    const importFileInput = $('import-file');
+    const importPasteBtn = $('import-paste');
+    const resetBtn = $('reset-save');
+
+    // ----- Rendering -----
+    function renderHeader() {
+      pointsEl.textContent = fmt(Math.floor(state.points));
+      perClickEl.textContent = fmt(state.perClick);
+      cpsEl.textContent = fmt(state.cps);
+      totalClicksEl.textContent = fmt(state.totalClicks);
+      cpsDisplay.textContent = fmt(state.cps);
+    }
+
+    function renderUpgrades() {
+      upgradesList.innerHTML = '';
+      UPGRADE_DEFS.forEach(def => {
+        const owned = state.upgrades[def.id] || 0;
+        const cost = calcCost(def.baseCost, owned);
+        const unlocked = state.totalClicks >= def.unlockAt;
+        const disabled = !unlocked || state.points < cost;
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.innerHTML = `
+          <div>
+            <div><strong>${def.name}</strong> <span class="small">x${owned}</span></div>
+            <div class="meta small">${def.perClickIncrease} per click</div>
+          </div>
+          <div style="text-align:right">
+            <div class="meta small">Cost: <span class="badge">${fmt(cost)}</span></div>
+            <div style="margin-top:6px">
+              <button class="buy" data-id="${def.id}" ${disabled ? 'disabled' : ''}>Buy</button>
+            </div>
+          </div>
+        `;
+        upgradesList.appendChild(item);
+      });
+      upgradesList.querySelectorAll('button.buy').forEach(btn => {
+        btn.onclick = () => buyUpgrade(btn.getAttribute('data-id'));
+      });
+    }
+
+    function renderAutoclickers() {
+      autoclickersList.innerHTML = '';
+      AUTOCLICKER_DEFS.forEach(def => {
+        const owned = state.autoclickers[def.id] || 0;
+        const cost = calcCost(def.baseCost, owned);
+        const unlocked = state.totalClicks >= def.unlockAt;
+        const disabled = !unlocked || state.points < cost;
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.innerHTML = `
+          <div>
+            <div><strong>${def.name}</strong> <span class="small">x${owned}</span></div>
+            <div class="meta small">${def.cps} CPS each</div>
+          </div>
+          <div style="text-align:right">
+            <div class="meta small">Cost: <span class="badge">${fmt(cost)}</span></div>
+            <div style="margin-top:6px">
+              <button class="buy" data-id="${def.id}" ${disabled ? 'disabled' : ''}>Buy</button>
+            </div>
+          </div>
+        `;
+        autoclickersList.appendChild(item);
+      });
+      autoclickersList.querySelectorAll('button.buy').forEach(btn => {
+        btn.onclick = () => buyAutoclicker(btn.getAttribute('data-id'));
+      });
+    }
+
+    function renderAll() {
+      renderHeader();
+      renderUpgrades();
+      renderAutoclickers();
+    }
+
+    // ----- Game Behavior -----
+    function doClick() {
+      state.points += state.perClick;
+      state.totalClicks += 1;
+      state.updatedAt = Date.now();
+      renderAll();
+      saveStateDebounced();
+    }
+
+    function buyUpgrade(id) {
+      const def = UPGRADE_DEFS.find(d => d.id === id);
+      if (!def) return;
+      const owned = state.upgrades[id] || 0;
+      const cost = calcCost(def.baseCost, owned);
+      if (state.points < cost) return;
+      state.points -= cost;
+      state.upgrades[id] = owned + 1;
+      state.perClick += def.perClickIncrease;
+      state.updatedAt = Date.now();
+      renderAll();
+      saveStateDebounced();
+    }
+
+    function buyAutoclicker(id) {
+      const def = AUTOCLICKER_DEFS.find(d => d.id === id);
+      if (!def) return;
+      const owned = state.autoclickers[id] || 0;
+      const cost = calcCost(def.baseCost, owned);
+      if (state.points < cost) return;
+      state.points -= cost;
+      state.autoclickers[id] = owned + 1;
+      state.cps += def.cps;
+      state.updatedAt = Date.now();
+      renderAll();
+      saveStateDebounced();
+    }
+
+    // ----- Ticking (passive income) -----
+    let last = performance.now();
+    function tick(now) {
+      const dt = (now - last) / 1000;
+      last = now;
+      if (state.cps > 0) {
+        state.points += state.cps * dt;
+      }
+      // occasional save
+      if (now % 5000 < 50) saveStateDebounced(); // best-effort
+      renderHeader();
+      window.requestAnimationFrame(tick);
+    }
+    window.requestAnimationFrame(tick);
+
+    // ----- Save / Load -----
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          // Basic migration: ensure required fields exist
+          return Object.assign({}, DEFAULT_STATE, parsed);
+        }
+      } catch (e) {
+        console.warn('Failed to load save, using default', e);
+      }
+      return Object.assign({}, DEFAULT_STATE);
+    }
+
+    function saveState() {
+      try {
+        state.updatedAt = Date.now();
+        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.error('Failed to save', e);
+      }
+    }
+    let saveTimer = null;
+    function saveStateDebounced() {
+      if (saveTimer) clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => { saveState(); saveTimer = null; }, 300);
+    }
+
+    function resetState(confirmReset = true) {
+      if (confirmReset && !confirm('Reset the game? This will erase your save.')) return;
+      state = Object.assign({}, DEFAULT_STATE, { createdAt: Date.now(), updatedAt: Date.now() });
+      saveState();
+      renderAll();
+    }
+
+    // Export / Import
+    function exportSave() {
+      try {
+        const data = JSON.stringify(state, null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'clicker-save.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        alert('Failed to export save: ' + e.message);
+      }
+    }
+
+    function importSaveFromText(text) {
+      try {
+        const parsed = JSON.parse(text);
+        if (typeof parsed.points !== 'number') throw new Error('Invalid save format');
+        state = Object.assign({}, DEFAULT_STATE, parsed);
+        saveState();
+        renderAll();
+        alert('Save imported.');
+      } catch (e) {
+        alert('Failed to import save: ' + e.message);
+      }
+    }
+
+    function importSaveFile(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        importSaveFromText(reader.result);
+      };
+      reader.onerror = () => alert('Failed to read file');
+      reader.readAsText(file);
+    }
+
+    // ----- UI wiring -----
+    bigBtn.addEventListener('click', () => {
+      doClick();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        bigBtn.classList.add('active');
+        doClick();
+        setTimeout(() => bigBtn.classList.remove('active'), 80);
+      }
+    });
+
+    exportBtn.addEventListener('click', exportSave);
+    importFileInput.addEventListener('change', (ev) => {
+      const f = ev.target.files && ev.target.files[0];
+      if (f) importSaveFile(f);
+      importFileInput.value = '';
+    });
+    importPasteBtn.addEventListener('click', () => {
+      const text = prompt('Paste your save JSON here:');
+      if (text) importSaveFromText(text);
+    });
+    resetBtn.addEventListener('click', () => resetState(true));
+
+    // Quick buy "best auto" button (buys the cheapest unlocked auto-clicker you can afford)
+    const autoQuickBtn = $('auto-clicker-btn');
+    autoQuickBtn.addEventListener('click', () => {
+      // find unlocked and affordable autoclickers, choose one with highest cps/cost ratio
+      const candidates = AUTOCLICKER_DEFS
+        .filter(d => state.totalClicks >= d.unlockAt)
+        .map(d => ({ def: d, owned: state.autoclickers[d.id] || 0 }))
+        .map(o => ({ def: o.def, cost: calcCost(o.def.baseCost, o.owned), owned: o.owned }))
+        .filter(o => o.cost <= state.points);
+      if (candidates.length === 0) return alert('No affordable auto-clickers right now.');
+      // prefer highest cps per cost
+      candidates.sort((a, b) => (b.def.cps / b.cost) - (a.def.cps / a.cost));
+      const best = candidates[0];
+      // buy one
+      state.points -= best.cost;
+      state.autoclickers[best.def.id] = (state.autoclickers[best.def.id] || 0) + 1;
+      state.cps += best.def.cps;
+      state.updatedAt = Date.now();
+      renderAll();
+      saveStateDebounced();
+    });
+
+    // ----- Start -----
+    renderAll();
+    // periodic autosave
+    setInterval(() => saveState(), 5000);
+
+    // expose state for debugging
+    window.Clicker = {
+      getState: () => JSON.parse(JSON.stringify(state)),
+      save: () => saveState(),
+      reset: () => resetState(true)
+    };
+  })();
+  </script>
+</body>
+</html>
