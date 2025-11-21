@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Coinflip Play-Money</title>
+  <style>
+    body { font-family: system-ui, Arial; max-width: 900px; margin: 20px auto; }
+    .box { border: 1px solid #ddd; padding: 12px; margin: 8px 0; border-radius: 6px; }
+    input, button { padding: 8px; margin: 6px 0; }
+    #rooms { display: flex; gap: 8px; flex-wrap: wrap; }
+    .room { border: 1px solid #ccc; padding: 8px; border-radius: 6px; width: 220px; }
+  </style>
+</head>
+<body>
+  <h1>Coinflip — Play Credits</h1>
+
+  <div id="auth" class="box">
+    <div id="auth-forms">
+      <h3>Sign up</h3>
+      <input id="su-username" placeholder="username" /><br/>
+      <input id="su-password" placeholder="password" type="password" /><br/>
+      <button id="btn-signup">Sign up</button>
+      <hr/>
+      <h3>Login</h3>
+      <input id="li-username" placeholder="username" /><br/>
+      <input id="li-password" placeholder="password" type="password" /><br/>
+      <button id="btn-login">Login</button>
+    </div>
+    <div id="me" style="display:none;">
+      <div>Logged in as <strong id="me-username"></strong></div>
+      <div>Balance: <strong id="me-balance"></strong> credits</div>
+      <button id="btn-logout">Logout</button>
+    </div>
+  </div>
+
+  <div id="lobby" class="box" style="display:none;">
+    <h3>Lobby</h3>
+    <div>
+      <input id="bet-amount" type="number" value="100" /> bet
+      <button id="btn-create">Create Room</button>
+    </div>
+    <h4>Rooms</h4>
+    <div id="rooms"></div>
+  </div>
+
+  <div id="room-area" class="box" style="display:none;">
+    <h3>Room: <span id="room-id"></span></h3>
+    <div id="room-players"></div>
+    <button id="btn-join">Join Room</button>
+    <button id="btn-confirm">Confirm Start (both players)</button>
+    <div id="game-log"></div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
