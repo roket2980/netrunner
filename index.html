@@ -1,48 +1,75 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>Saved Notes</title>
+<title>SIGIL System Interface</title>
 
 <style>
+
 body{
-  background:black;
-  color:lime;
-  font-family:monospace;
-  text-align:center;
+background:black;
+color:#00ff9f;
+font-family:monospace;
+text-align:center;
+margin:40px;
+}
+
+h1{
+text-shadow:0 0 10px #00ff9f;
+}
+
+.section{
+border:1px solid #00ff9f;
+padding:20px;
+margin:20px auto;
+width:500px;
+box-shadow:0 0 10px #00ff9f;
 }
 
 textarea{
-  width:400px;
-  height:200px;
-  background:black;
-  color:lime;
-  border:1px solid lime;
+width:90%;
+height:150px;
+background:black;
+color:#00ff9f;
+border:1px solid #00ff9f;
+padding:10px;
+font-family:monospace;
 }
+
+button{
+background:#00ff9f;
+border:none;
+color:black;
+padding:10px 20px;
+margin-top:10px;
+cursor:pointer;
+font-weight:bold;
+}
+
+video{
+margin-top:10px;
+border:2px solid #00ff9f;
+}
+
 </style>
+
 </head>
 
 <body>
 
-<h1>Data Vault</h1>
+<h1>SIGIL SYSTEM INTERFACE</h1>
 
-<textarea id="notes"></textarea>
-<br><br>
+<div class="section">
+<h2>Network Scan</h2>
+<p id="ip">Detecting IP...</p>
+</div>
 
-<button onclick="saveNotes()">Save</button>
+<div class="section">
+<h2>Camera Feed</h2>
+<p>Camera requires permission.</p>
+<video id="cam" width="400" autoplay></video>
+</div>
 
-<script>
-
-const box = document.getElementById("notes");
-
-// Load saved data when page opens
-box.value = localStorage.getItem("vault") || "";
-
-function saveNotes(){
-  localStorage.setItem("vault", box.value);
-  alert("Saved.");
-}
-
-</script>
-
-</body>
-</html>
+<div class="section">
+<h2>Data Vault</h2>
+<textarea id="notes" plac
