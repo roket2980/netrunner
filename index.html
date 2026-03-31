@@ -8,7 +8,54 @@
 </head>
 <body>
     
- 
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Code Snippets</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Left Sidebar for Folders -->
+        <aside class="sidebar">
+            <h2>My Folders</h2>
+            <button id="new-folder-btn">+ New Folder</button>
+            <ul id="folder-list">
+                <!-- Folders will appear here -->
+            </ul>
+        </aside>
+
+        <!-- Main Area for Snippets -->
+        <main class="main-content">
+            <div class="snippet-header">
+                <h2 id="current-folder-name">Select a Folder</h2>
+                <button id="new-snippet-btn" style="display:none;">+ New Snippet</button>
+            </div>
+            
+            <div id="snippet-list" class="snippet-list">
+                <!-- Snippet cards will appear here -->
+            </div>
+
+            <!-- Editor Area (Hidden by default) -->
+            <div id="editor-area" class="editor-area" style="display:none;">
+                <input type="text" id="snippet-title" placeholder="Snippet Title (e.g., Fetch API)">
+                <select id="snippet-language">
+                    <option value="javascript">JavaScript</option>
+                    <option value="python">Python</option>
+                    <option value="html">HTML</option>
+                    <option value="css">CSS</option>
+                </select>
+                <!-- NOTE: Later, replace this textarea with CodeMirror! -->
+                <textarea id="snippet-code" placeholder="Paste or type your code here..."></textarea>
+                <button id="save-snippet-btn">Save Snippet</button>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
 
     <script src="js/script.js"></script>
 </body>
