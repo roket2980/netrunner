@@ -1,0 +1,25 @@
+[
+  {
+    "id": "f1",
+    "name": "JavaScript Basics",
+    "snippets": [
+      {
+        "id": "s1",
+        "title": "Debounce Function",
+        "language": "javascript",
+        "code": "function debounce(func, timeout) {...}"
+      },
+      {
+        "id": "s2",
+        "title": "Fetch API Call",
+        "language": "javascript",
+        "code": "fetch('url').then(res => res.json())..."
+      }
+    ]
+  },
+  {
+    "id": "f2",
+    "name": "CSS Tricks",
+    "snippets": []
+  }
+]
